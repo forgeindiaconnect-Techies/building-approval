@@ -97,15 +97,15 @@ export default function Applications() {
       {/* 1. Header with Real-Time Indicator */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '0.75rem' }}>
         <div>
-          <h2 style={{ fontSize: '1.35rem', fontWeight: 800, color: 'var(--text-main)', margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <h2 style={{ fontSize: '1.35rem', fontWeight: 800, color: 'var(--canvas-title, #0F172A)', margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             {currentUser === 'Admin' ? 'Applications Directory' : 'My Assigned Applications'}
           </h2>
-          <p style={{ color: 'var(--text-muted)', fontSize: '0.825rem', marginTop: '0.15rem' }}>
+          <p style={{ color: 'var(--canvas-sub, #475569)', fontSize: '0.825rem', marginTop: '0.15rem' }}>
             {currentUser === 'Admin' ? 'Manage and track building applications across all field workers in real-time' : 'View and update your assigned application tasks'}
           </p>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+        <div className="admin-dashboard-actions" style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', flexWrap: 'wrap' }}>
           <span style={{ 
             display: 'inline-flex', 
             alignItems: 'center', 
@@ -124,7 +124,7 @@ export default function Applications() {
 
           {currentUser === 'Admin' && (
             <button 
-              className="btn btn-primary btn-sm" 
+              className="btn btn-primary btn-sm admin-header-btn" 
               style={{ padding: '0.45rem 0.95rem', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}
               onClick={() => { setShowModal(true); setCreatedAppId(null); setFormData({ applicantName: '', mobile: '', email: '', location: '', surveyNumber: '', buildingType: 'Residential', area: '' }); }}
             >
@@ -134,10 +134,10 @@ export default function Applications() {
         </div>
       </div>
 
-      {/* 2. Step 33.1 Summary Stat Cards (5 Cards) */}
+      {/* Summary Stat Cards */}
       <div style={{ 
         display: 'grid', 
-        gridTemplateColumns: 'repeat(5, 1fr)', 
+        gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', 
         gap: '0.75rem', 
         marginBottom: '1.25rem' 
       }}>

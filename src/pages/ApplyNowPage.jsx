@@ -22,13 +22,19 @@ import {
 
 export default function ApplyNowPage() {
   const navigate = useNavigate();
-  const { addCustomerApplication, pushLiveToast } = useApp();
+  const { addCustomerApplication, pushLiveToast, sendBrevoRegistrationEmail } = useApp();
 
   const [submittedAppId, setSubmittedAppId] = useState(null);
   const [copied, setCopied] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [errors, setErrors] = useState({});
+  const [emailDelivery, setEmailDelivery] = useState({
+    sent: false,
+    loading: false,
+    error: null,
+    message: ''
+  });
 
   // 29.2 & 29.3 Applicant & Building Details State
   const [formData, setFormData] = useState({
@@ -129,29 +135,103 @@ export default function ApplyNowPage() {
   };
 
   // Final Confirmation & Submission (Step 30, 31, 32)
-  const handleFinalConfirm = () => {
+  const handleFinalConfirm = async () => {
     setShowConfirmModal(false);
     setIsSubmitting(true);
 
-    setTimeout(() => {
-      // Create document payload
-      const docPayload = {};
-      Object.keys(uploadedDocs).forEach(key => {
-        docPayload[key] = uploadedDocs[key].file;
+    // Create document payload
+    const docPayload = {};
+    Object.keys(uploadedDocs).forEach(key => {
+      docPayload[key] = uploadedDocs[key].file;
+    });
+
+    // Step 31: Create Customer Public Application with workerId = null
+    const newId = addCustomerApplication(formData, docPayload);
+    
+    // Step 32: Admin Notification
+    if (pushLiveToast) {
+      pushLiveToast('New Application Submitted', `Application ${newId} submitted by ${formData.fullName}`, 'application');
+    }
+
+    setSubmittedAppId(newId);
+    setIsSubmitting(false);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    // Step 33: Trigger Brevo Email in real-time and track actual response
+    if (formData.email && formData.email.includes('@')) {
+      setEmailDelivery({ sent: false, loading: true, error: null, message: 'Dispatching confirmation email via Brevo...' });
+      try {
+        const emailRes = await sendBrevoRegistrationEmail({
+          id: newId,
+          applicantName: formData.fullName,
+          email: formData.email,
+          location: `${formData.village || ''}, ${formData.district}`,
+          buildingType: formData.buildingType,
+          workerName: 'Online Portal'
+        });
+
+        if (emailRes.success) {
+          setEmailDelivery({
+            sent: true,
+            loading: false,
+            error: null,
+            message: `Official confirmation email delivered to ${formData.email}`
+          });
+        } else {
+          setEmailDelivery({
+            sent: false,
+            loading: false,
+            error: emailRes.error || 'Failed to dispatch email via Brevo',
+            message: ''
+          });
+        }
+      } catch (err) {
+        setEmailDelivery({
+          sent: false,
+          loading: false,
+          error: err.message,
+          message: ''
+        });
+      }
+    }
+  };
+
+  const handleResendEmail = async () => {
+    if (!formData.email || !submittedAppId) return;
+    setEmailDelivery({ sent: false, loading: true, error: null, message: 'Retrying Brevo email delivery...' });
+    try {
+      const emailRes = await sendBrevoRegistrationEmail({
+        id: submittedAppId,
+        applicantName: formData.fullName,
+        email: formData.email,
+        location: `${formData.village || ''}, ${formData.district}`,
+        buildingType: formData.buildingType,
+        workerName: 'Online Portal'
       });
 
-      // Step 31: Create Customer Public Application with workerId = null
-      const newId = addCustomerApplication(formData, docPayload);
-      
-      // Step 32: Admin Notification
-      if (pushLiveToast) {
-        pushLiveToast('New Application Submitted', `Application ${newId} submitted by ${formData.fullName}`, 'application');
+      if (emailRes.success) {
+        setEmailDelivery({
+          sent: true,
+          loading: false,
+          error: null,
+          message: `Official confirmation email delivered to ${formData.email}`
+        });
+      } else {
+        setEmailDelivery({
+          sent: false,
+          loading: false,
+          error: emailRes.error || 'Failed to dispatch email',
+          message: ''
+        });
       }
-
-      setSubmittedAppId(newId);
-      setIsSubmitting(false);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }, 600);
+    } catch (err) {
+      setEmailDelivery({
+        sent: false,
+        loading: false,
+        error: err.message,
+        message: ''
+      });
+    }
   };
 
   const copyAppId = () => {
@@ -183,7 +263,52 @@ export default function ApplyNowPage() {
               </div>
             </div>
 
-            <div style={{ display: 'flex', gap: '1rem' }}>
+            <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+              <button
+                onClick={async () => {
+                  const testEmail = prompt('Enter recipient email address to test real-time Brevo delivery:', formData.email || 'pooja.antigraviity@gmail.com');
+                  if (!testEmail || !testEmail.includes('@')) {
+                    if (testEmail) alert('Please enter a valid email address.');
+                    return;
+                  }
+                  try {
+                    const res = await fetch('http://localhost:5000/api/brevo/test-email', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({
+                        toEmail: testEmail,
+                        toName: formData.fullName || 'Citizen User',
+                        subject: '⚡ Real-Time Brevo Email Test - Building Approval System',
+                        message: 'Congratulations! Your Brevo integration in the Building Approval System is working and delivering real-time emails successfully.'
+                      })
+                    });
+                    const data = await res.json();
+                    if (res.ok && data.success) {
+                      alert(`✅ SUCCESS: Brevo email successfully dispatched to ${testEmail}!\n\nCheck your inbox now!`);
+                    } else {
+                      alert(`❌ Brevo delivery error:\n${data.error || JSON.stringify(data)}`);
+                    }
+                  } catch (err) {
+                    alert(`❌ Connection error: Could not reach backend at http://localhost:5000.\n${err.message}`);
+                  }
+                }}
+                style={{
+                  backgroundColor: '#eff6ff',
+                  color: '#1d4ed8',
+                  border: '1px solid #bfdbfe',
+                  padding: '0.55rem 1rem',
+                  borderRadius: '8px',
+                  fontSize: '0.85rem',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.4rem'
+                }}
+              >
+                📧 Test Brevo Mailer
+              </button>
+
               <button 
                 onClick={() => navigate('/')} 
                 style={{ backgroundColor: '#ffffff', border: '1px solid #cbd5e1', color: '#003366', padding: '0.55rem 1.15rem', borderRadius: '8px', fontSize: '0.85rem', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.4rem' }}
@@ -237,15 +362,65 @@ export default function ApplyNowPage() {
 
             {/* Brevo Email Delivery Feedback */}
             {formData.email && (
-              <div style={{ backgroundColor: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '12px', padding: '1.25rem 1.5rem', maxWidth: '580px', margin: '0 auto 1.5rem auto', textAlign: 'left', display: 'flex', gap: '0.85rem', alignItems: 'flex-start' }}>
-                <Mail size={22} color="#16a34a" style={{ flexShrink: 0, marginTop: '2px' }} />
-                <div>
-                  <div style={{ fontSize: '0.95rem', fontWeight: 800, color: '#166534', marginBottom: '0.2rem' }}>
-                    📧 Real-Time Confirmation Email Dispatched!
+              <div style={{
+                backgroundColor: emailDelivery.error ? '#fef2f2' : emailDelivery.sent ? '#f0fdf4' : '#eff6ff',
+                border: `1px solid ${emailDelivery.error ? '#fecaca' : emailDelivery.sent ? '#bbf7d0' : '#bfdbfe'}`,
+                borderRadius: '12px',
+                padding: '1.25rem 1.5rem',
+                maxWidth: '580px',
+                margin: '0 auto 1.5rem auto',
+                textAlign: 'left',
+                display: 'flex',
+                gap: '0.85rem',
+                alignItems: 'flex-start'
+              }}>
+                <Mail size={22} color={emailDelivery.error ? '#dc2626' : emailDelivery.sent ? '#16a34a' : '#2563eb'} style={{ flexShrink: 0, marginTop: '2px' }} />
+                <div style={{ flex: 1 }}>
+                  <div style={{
+                    fontSize: '0.95rem',
+                    fontWeight: 800,
+                    color: emailDelivery.error ? '#991b1b' : emailDelivery.sent ? '#166534' : '#1e40af',
+                    marginBottom: '0.2rem'
+                  }}>
+                    {emailDelivery.loading ? '⏳ Dispatching Real-Time Email via Brevo...' :
+                     emailDelivery.sent ? '📧 Real-Time Confirmation Email Dispatched!' :
+                     emailDelivery.error ? '⚠️ Brevo Email Delivery Notification' : '📧 Real-Time Email Confirmation'}
                   </div>
-                  <div style={{ fontSize: '0.825rem', color: '#15803d', lineHeight: 1.5 }}>
-                    An official acknowledgement letter, application summary, and direct tracking link have been delivered to <strong>{formData.email}</strong> via Brevo.
+                  <div style={{
+                    fontSize: '0.825rem',
+                    color: emailDelivery.error ? '#b91c1c' : emailDelivery.sent ? '#15803d' : '#1e3a8a',
+                    lineHeight: 1.5
+                  }}>
+                    {emailDelivery.loading && `Connecting to Brevo mailer to deliver official acknowledgement to ${formData.email}...`}
+                    {emailDelivery.sent && `An official acknowledgement letter, application summary, and direct tracking link have been delivered to ${formData.email} via Brevo.`}
+                    {emailDelivery.error && (
+                      <div>
+                        <div>Email service status: <strong>{emailDelivery.error}</strong></div>
+                        <div style={{ marginTop: '0.35rem', fontSize: '0.78rem', color: '#7f1d1d' }}>
+                          Note: Ensure your Brevo sender email is verified or configured with an active Brevo API key in <code>.env</code>.
+                        </div>
+                      </div>
+                    )}
                   </div>
+                  {emailDelivery.error && (
+                    <button
+                      onClick={handleResendEmail}
+                      disabled={emailDelivery.loading}
+                      style={{
+                        marginTop: '0.6rem',
+                        backgroundColor: '#dc2626',
+                        color: 'white',
+                        border: 'none',
+                        padding: '0.35rem 0.85rem',
+                        borderRadius: '6px',
+                        fontSize: '0.75rem',
+                        fontWeight: 700,
+                        cursor: 'pointer'
+                      }}
+                    >
+                      {emailDelivery.loading ? 'Retrying...' : '🔄 Retry Sending Email'}
+                    </button>
+                  )}
                 </div>
               </div>
             )}

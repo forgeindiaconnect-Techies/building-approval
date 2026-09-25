@@ -133,8 +133,8 @@ export default function ApplicationTable({ applications, onClearFilters }) {
                 {/* Stage */}
                 <td style={{ padding: '0.85rem 1.25rem', fontWeight: 600, color: 'var(--text-main)', whiteSpace: 'nowrap' }}>
                   <span style={{
-                    backgroundColor: stage === 'Completed' ? 'var(--success-bg)' : 'var(--background)',
-                    color: stage === 'Completed' ? 'var(--success)' : 'var(--text-main)',
+                    backgroundColor: stage === 'Completed' ? 'var(--success-bg)' : '#F8FAFC',
+                    color: stage === 'Completed' ? 'var(--success)' : '#334155',
                     padding: '0.25rem 0.5rem',
                     borderRadius: 'var(--radius-sm)',
                     fontSize: '0.78rem',

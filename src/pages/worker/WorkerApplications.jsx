@@ -115,7 +115,7 @@ export default function WorkerApplications() {
       case 'rejected':
         return { label: 'Rejected', bg: '#fee2e2', color: '#dc2626', icon: AlertCircle, border: '#dc2626' };
       case 'under_review':
-        return { label: 'Under Review', bg: '#e6f0fa', color: '#003366', icon: Clock, border: '#003366' };
+        return { label: 'Under Review', bg: '#e6f0fa', color: 'var(--primary)', icon: Clock, border: 'var(--primary)' };
       case 'pending':
       default:
         return { label: 'Pending Uploads', bg: '#fff5e6', color: '#d97706', icon: Clock, border: '#FF9933' };
@@ -133,7 +133,7 @@ export default function WorkerApplications() {
         borderRadius: '12px',
         padding: '1.25rem 1.5rem',
         marginBottom: '1.25rem',
-        boxShadow: '0 6px 18px rgba(0, 51, 102, 0.12)',
+        boxShadow: '0 6px 18px rgba(0, 0, 0, 0.04)',
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
@@ -163,7 +163,7 @@ export default function WorkerApplications() {
             setShowModal(true); 
           }}
           style={{
-            backgroundColor: '#003366',
+            backgroundColor: 'var(--primary)',
             color: '#ffffff',
             border: 'none',
             borderRadius: '8px',
@@ -174,7 +174,8 @@ export default function WorkerApplications() {
             display: 'flex',
             alignItems: 'center',
             gap: '0.4rem',
-            transition: 'all 0.2s ease'
+            transition: 'all 0.2s ease',
+            boxShadow: '0 2px 6px rgba(0,0,0,0.1)'
           }}
         >
           <Plus size={16} /> Register New Customer
@@ -315,7 +316,7 @@ export default function WorkerApplications() {
                 key={chip.id}
                 onClick={() => setStatusFilter(chip.id)}
                 style={{
-                  backgroundColor: active ? '#003366' : '#f1f5f9',
+                  backgroundColor: active ? 'var(--primary)' : '#f1f5f9',
                   color: active ? '#ffffff' : '#475569',
                   border: 'none',
                   borderRadius: '16px',
@@ -341,7 +342,7 @@ export default function WorkerApplications() {
           textAlign: 'center',
           border: '1px solid #e2e8f0'
         }}>
-          <RefreshCw size={28} className="animate-spin" style={{ color: '#003366', margin: '0 auto 0.75rem' }} />
+          <RefreshCw size={28} className="animate-spin" style={{ color: 'var(--primary)', margin: '0 auto 0.75rem' }} />
           <h4 style={{ fontSize: '1rem', fontWeight: 700, color: '#1e293b' }}>Loading Applications...</h4>
         </div>
       ) : filteredApps.length === 0 ? (
@@ -364,7 +365,7 @@ export default function WorkerApplications() {
           <button 
             onClick={() => setShowModal(true)}
             style={{
-              backgroundColor: '#003366',
+              backgroundColor: 'var(--primary)',
               color: '#ffffff',
               border: 'none',
               borderRadius: '8px',
@@ -411,8 +412,8 @@ export default function WorkerApplications() {
                   {/* Top Row: App ID & Status Pill */}
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.85rem' }}>
                     <span style={{
-                      backgroundColor: '#e6f0fa',
-                      color: '#003366',
+                      backgroundColor: 'var(--primary-light, #e6f0fa)',
+                      color: 'var(--primary, #0F2A4A)',
                       fontWeight: 700,
                       fontSize: '0.8rem',
                       padding: '0.25rem 0.6rem',
@@ -443,7 +444,7 @@ export default function WorkerApplications() {
                       width: '38px',
                       height: '38px',
                       borderRadius: '50%',
-                      backgroundColor: '#003366',
+                      backgroundColor: 'var(--primary, #0F2A4A)',
                       color: '#ffffff',
                       display: 'flex',
                       alignItems: 'center',
@@ -505,7 +506,7 @@ export default function WorkerApplications() {
                       style={{
                         flex: 1,
                         backgroundColor: isJustCopied ? '#e7f5e8' : '#ffffff',
-                        color: isJustCopied ? '#138808' : '#003366',
+                        color: isJustCopied ? '#138808' : 'var(--primary, #0F2A4A)',
                         border: isJustCopied ? '1px solid #138808' : '1px solid #cbd5e1',
                         borderRadius: '6px',
                         padding: '0.4rem 0.6rem',
@@ -573,8 +574,8 @@ export default function WorkerApplications() {
                     onClick={() => navigate(`/worker/application/${app.id}`)}
                     style={{
                       width: '100%',
-                      backgroundColor: '#e6f0fa',
-                      color: '#003366',
+                      backgroundColor: 'var(--primary-light, #e6f0fa)',
+                      color: 'var(--primary, #0F2A4A)',
                       border: 'none',
                       borderRadius: '6px',
                       padding: '0.55rem 0.85rem',
@@ -626,7 +627,7 @@ export default function WorkerApplications() {
             {!createdAppId ? (
               <>
                 <div style={{
-                  backgroundColor: '#003366',
+                  backgroundColor: 'var(--primary, #0F2A4A)',
                   color: '#ffffff',
                   padding: '1rem 1.5rem',
                   display: 'flex',
@@ -761,7 +762,7 @@ export default function WorkerApplications() {
                     </button>
                     <button 
                       type="submit" 
-                      style={{ flex: 1, padding: '0.65rem', border: 'none', borderRadius: '8px', backgroundColor: '#003366', fontWeight: 700, color: '#ffffff', cursor: 'pointer', fontSize: '0.85rem' }}
+                      style={{ flex: 1, padding: '0.65rem', border: 'none', borderRadius: '8px', backgroundColor: 'var(--primary)', fontWeight: 700, color: '#ffffff', cursor: 'pointer', fontSize: '0.85rem' }}
                     >
                       Register & Create Link
                     </button>
@@ -778,7 +779,7 @@ export default function WorkerApplications() {
                   Customer Registered!
                 </h4>
                 <p style={{ color: '#64748b', fontSize: '0.85rem', marginBottom: '1rem' }}>
-                  Application ID: <strong style={{ color: '#003366', fontSize: '0.98rem' }}>{createdAppId}</strong>
+                  Application ID: <strong style={{ color: 'var(--primary)', fontSize: '0.98rem' }}>{createdAppId}</strong>
                 </p>
 
                 {formData.email ? (
@@ -808,7 +809,7 @@ export default function WorkerApplications() {
                     />
                     <button 
                       onClick={() => copyLink(createdAppId)}
-                      style={{ padding: '0.55rem 0.85rem', backgroundColor: '#003366', color: '#ffffff', border: 'none', borderRadius: '6px', fontWeight: 600, fontSize: '0.8rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.3rem' }}
+                      style={{ padding: '0.55rem 0.85rem', backgroundColor: 'var(--primary)', color: '#ffffff', border: 'none', borderRadius: '6px', fontWeight: 600, fontSize: '0.8rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.3rem' }}
                     >
                       <Copy size={14} /> {copiedId === createdAppId ? 'Copied!' : 'Copy'}
                     </button>

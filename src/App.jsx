@@ -22,6 +22,7 @@ import WorkerProfile from './pages/worker/WorkerProfile';
 import LandingPage from './pages/LandingPage';
 import ApplyNowPage from './pages/ApplyNowPage';
 import TrackStatusPage from './pages/TrackStatusPage';
+import AdminSettings from './pages/admin/AdminSettings';
 import { AppProvider, useApp } from './context/AppContext';
 
 const ProtectedRoute = ({ children, requiredRole }) => {
@@ -55,6 +56,7 @@ function App() {
           <Route path="/track" element={<TrackStatusPage />} />
           <Route path="/track-status" element={<TrackStatusPage />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/dashboard" element={<Navigate to="/login" replace />} />
           <Route path="/customer-upload/:id" element={<CustomerUpload />} />
 
           {/* Admin Routes */}
@@ -73,7 +75,7 @@ function App() {
             <Route path="locations" element={<Placeholder title="Locations Directory" />} />
             <Route path="reports" element={<ReportsDashboard />} />
             <Route path="notifications" element={<NotificationsPage />} />
-            <Route path="settings" element={<Placeholder title="System Settings" />} />
+            <Route path="settings" element={<AdminSettings />} />
           </Route>
 
           {/* Worker Routes */}

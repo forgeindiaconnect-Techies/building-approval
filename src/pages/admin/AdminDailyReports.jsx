@@ -11,11 +11,19 @@ export default function AdminDailyReports() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedReportModal, setSelectedReportModal] = useState(null);
 
-  // List of workers
-  const allWorkers = workers.length > 0 
-    ? workers.map(w => w.username || w.name)
-    : ['Pooja', 'Arun', 'Kumar', 'Suresh'];
-  const workerList = Array.from(new Set([...allWorkers, 'Pooja', 'Arun', 'Kumar', 'Suresh']));
+  // Clean and deduplicate registered field worker names
+  const defaultWorkers = ['Pooja', 'Arun', 'Kumar', 'Suresh'];
+  const registeredUsernames = workers.map(w => {
+    const raw = w.username || w.name || '';
+    return raw.includes('@') ? raw.split('@')[0] : raw;
+  }).filter(Boolean);
+
+  const workerMap = new Map();
+  [...defaultWorkers, ...registeredUsernames].forEach(name => {
+    const clean = name.trim().replace(/^\w/, c => c.toUpperCase());
+    workerMap.set(clean.toLowerCase(), clean);
+  });
+  const workerList = Array.from(workerMap.values());
 
   // Filter daily reports
   const filteredReports = dailyReports.filter(rep => {
@@ -84,8 +92,8 @@ export default function AdminDailyReports() {
       </div>
 
       {/* Reports Table */}
-      <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
-        <div style={{ padding: '1.25rem 1.5rem', borderBottom: '1px solid var(--border)', backgroundColor: 'var(--background)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <div className="card" style={{ padding: 0, overflow: 'hidden', backgroundColor: '#FFFFFF' }}>
+        <div style={{ padding: '1.25rem 1.5rem', borderBottom: '1px solid var(--border)', backgroundColor: '#F8FAFC', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <h3 style={{ fontSize: '1.125rem', fontWeight: 600, color: 'var(--text-main)' }}>
             Submitted Reports ({filteredReports.length})
           </h3>
@@ -149,7 +157,7 @@ export default function AdminDailyReports() {
       {/* Detail Modal */}
       {selectedReportModal && (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 999, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <div className="card" style={{ width: '550px', backgroundColor: 'var(--background)', maxHeight: '90vh', overflowY: 'auto' }}>
+          <div className="card" style={{ width: '550px', backgroundColor: '#FFFFFF', maxHeight: '90vh', overflowY: 'auto' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', borderBottom: '1px solid var(--border)', paddingBottom: '1rem' }}>
               <div>
                 <h3 style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--primary)' }}>Daily Work Report</h3>

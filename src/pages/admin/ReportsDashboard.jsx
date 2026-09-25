@@ -35,10 +35,10 @@ export default function ReportsDashboard() {
       {/* Header and Actions */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '2rem', flexWrap: 'wrap', gap: '1rem' }}>
         <div>
-          <h2 style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <h2 style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--canvas-title, #0F172A)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             <BarChart2 size={24} color="var(--primary)" /> Reports & Analytics
           </h2>
-          <p style={{ color: 'var(--text-muted)' }}>Overview of all portal activities and worker performance.</p>
+          <p style={{ color: 'var(--canvas-sub, #475569)' }}>Overview of all portal activities and worker performance.</p>
         </div>
         <div style={{ display: 'flex', gap: '0.75rem' }}>
           <button className="btn btn-outline" onClick={() => alert('Excel export will be implemented in the backend.')}>

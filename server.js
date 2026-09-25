@@ -99,27 +99,77 @@ async function checkCloudinaryConnection() {
   });
 }
 
-const BREVO_API_KEY = process.env.BREVO_API_KEY || '';
-const BREVO_SMTP_KEY = process.env.BREVO_SMTP_KEY || '';
-const BREVO_SENDER_NAME = process.env.BREVO_SENDER_NAME || 'BuildPermit System';
-const BREVO_SENDER_EMAIL = process.env.BREVO_SENDER_EMAIL || 'forgeindiaconnectfic@gmail.com';
-const BREVO_SMTP_LOGIN = process.env.BREVO_SMTP_LOGIN || BREVO_SENDER_EMAIL;
+// Dynamic Brevo Configuration Helper (reads latest process.env / .env)
+function getBrevoConfig() {
+  // Re-read .env if needed to catch live updates
+  try {
+    if (fs.existsSync(envPath)) {
+      const content = fs.readFileSync(envPath, 'utf-8');
+      content.split('\n').forEach(line => {
+        const trimmed = line.trim();
+        if (trimmed && !trimmed.startsWith('#') && trimmed.includes('=')) {
+          const [k, ...v] = trimmed.split('=');
+          process.env[k.trim()] = v.join('=').trim().replace(/^["']|["']$/g, '');
+        }
+      });
+    }
+  } catch {}
+
+  const rawApi = (process.env.BREVO_API_KEY || '').trim();
+  const rawSmtp = (process.env.BREVO_SMTP_KEY || '').trim();
+  const senderEmail = (process.env.BREVO_SENDER_EMAIL || 'forgeindiaconnectfic@gmail.com').trim();
+  const senderName = (process.env.BREVO_SENDER_NAME || 'Tamil Nadu Building Approval Portal').trim();
+  const smtpLogin = (process.env.BREVO_SMTP_LOGIN || 'b5786a001@smtp-brevo.com').trim();
+
+  // Smart resolution
+  let apiKey = '';
+  let smtpKey = '';
+
+  if (rawApi.startsWith('xkeysib-')) {
+    apiKey = rawApi;
+  } else if (rawApi.startsWith('xsmtpsib-')) {
+    smtpKey = rawApi;
+  }
+
+  if (rawSmtp.startsWith('xsmtpsib-')) {
+    smtpKey = rawSmtp;
+  } else if (rawSmtp.startsWith('xkeysib-')) {
+    apiKey = rawSmtp;
+  }
+
+  // Fallback if key does not match prefix
+  if (!apiKey && rawApi && !rawApi.startsWith('xsmtpsib-')) apiKey = rawApi;
+  if (!smtpKey && rawSmtp && !rawSmtp.startsWith('xkeysib-')) smtpKey = rawSmtp;
+
+  return {
+    apiKey,
+    smtpKey,
+    senderEmail,
+    senderName,
+    smtpLogin,
+    smtpHost: 'smtp-relay.brevo.com',
+    smtpPort: 587
+  };
+}
 
 // 1. Direct RFC-Compliant SMTP STARTTLS Client for Brevo
 async function sendBrevoSmtpEmail({ toEmail, toName, subject, htmlContent }) {
   const net = await import('net');
   const tls = await import('tls');
+  const config = getBrevoConfig();
 
-  const smtpHost = 'smtp-relay.brevo.com';
-  const smtpPort = 587;
-  const smtpUser = BREVO_SMTP_LOGIN;
-  const smtpPass = BREVO_SMTP_KEY;
-  const senderEmail = BREVO_SENDER_EMAIL;
-  const senderName = BREVO_SENDER_NAME;
+  const smtpHost = config.smtpHost;
+  const smtpPort = config.smtpPort;
+  const smtpUser = config.smtpLogin;
+  const smtpPass = config.smtpKey;
+  const senderEmail = config.senderEmail;
+  const senderName = config.senderName;
 
   if (!smtpPass) {
-    throw new Error('BREVO_SMTP_KEY is not configured in .env');
+    throw new Error('BREVO_SMTP_KEY is not configured in .env (starts with xsmtpsib-...)');
   }
+
+  console.log(`📡 [Brevo SMTP] Connecting to ${smtpHost}:${smtpPort} (User: ${smtpUser})...`);
 
   return new Promise((resolve, reject) => {
     let step = 0;
@@ -263,11 +313,14 @@ async function sendBrevoSmtpEmail({ toEmail, toName, subject, htmlContent }) {
 
 // 2. Brevo REST API Client (Used when BREVO_API_KEY is configured)
 async function sendBrevoRestEmail({ toEmail, toName, subject, htmlContent }) {
-  if (!BREVO_API_KEY) throw new Error('BREVO_API_KEY is not configured in .env');
+  const config = getBrevoConfig();
+  if (!config.apiKey) throw new Error('BREVO_API_KEY is not configured in .env (starts with xkeysib-...)');
+
+  console.log(`📡 [Brevo REST API] Sending email via HTTPS api.brevo.com to ${toEmail}...`);
 
   return new Promise((resolve, reject) => {
     const payload = JSON.stringify({
-      sender: { name: BREVO_SENDER_NAME, email: BREVO_SENDER_EMAIL },
+      sender: { name: config.senderName, email: config.senderEmail },
       to: [{ email: toEmail, name: toName || toEmail }],
       subject: subject || 'Building Approval Status Notification',
       htmlContent: htmlContent || '<p>Notification from Building Approval System</p>'
@@ -278,7 +331,7 @@ async function sendBrevoRestEmail({ toEmail, toName, subject, htmlContent }) {
       path: '/v3/smtp/email',
       method: 'POST',
       headers: {
-        'api-key': BREVO_API_KEY,
+        'api-key': config.apiKey,
         'Content-Type': 'application/json',
         'Content-Length': Buffer.byteLength(payload)
       },
@@ -292,8 +345,10 @@ async function sendBrevoRestEmail({ toEmail, toName, subject, htmlContent }) {
         try {
           const parsed = JSON.parse(data);
           if (res.statusCode >= 200 && res.statusCode < 300) {
+            console.log(`✅ [Brevo REST API] Dispatched successfully:`, parsed);
             resolve({ success: true, mode: 'REST API', ...parsed });
           } else {
+            console.error(`❌ [Brevo REST API Error HTTP ${res.statusCode}]:`, parsed.message || data);
             reject(new Error(parsed.message || data || `Brevo REST error ${res.statusCode}`));
           }
         } catch (e) {
@@ -302,7 +357,10 @@ async function sendBrevoRestEmail({ toEmail, toName, subject, htmlContent }) {
       });
     });
 
-    req.on('error', reject);
+    req.on('error', (err) => {
+      console.error(`❌ [Brevo REST API Request Error]:`, err.message);
+      reject(err);
+    });
     req.on('timeout', () => {
       req.destroy();
       reject(new Error('Brevo REST API request timed out'));
@@ -314,11 +372,14 @@ async function sendBrevoRestEmail({ toEmail, toName, subject, htmlContent }) {
 
 // 3. Unified Brevo Dispatcher (Auto-selects REST API or SMTP Key)
 async function sendBrevoEmail({ toEmail, toName, subject, htmlContent }) {
-  if (BREVO_API_KEY && BREVO_API_KEY.startsWith('xkeysib-')) {
+  const config = getBrevoConfig();
+
+  // Try REST API first if configured
+  if (config.apiKey && config.apiKey.startsWith('xkeysib-')) {
     try {
       return await sendBrevoRestEmail({ toEmail, toName, subject, htmlContent });
     } catch (err) {
-      if (BREVO_SMTP_KEY) {
+      if (config.smtpKey) {
         console.warn('⚠️ Brevo REST API failed, falling back to Brevo SMTP Relay:', err.message);
         return await sendBrevoSmtpEmail({ toEmail, toName, subject, htmlContent });
       }
@@ -326,11 +387,12 @@ async function sendBrevoEmail({ toEmail, toName, subject, htmlContent }) {
     }
   }
 
-  if (BREVO_SMTP_KEY) {
+  // Use SMTP Key if configured
+  if (config.smtpKey) {
     return await sendBrevoSmtpEmail({ toEmail, toName, subject, htmlContent });
   }
 
-  if (BREVO_API_KEY) {
+  if (config.apiKey) {
     return await sendBrevoRestEmail({ toEmail, toName, subject, htmlContent });
   }
 
@@ -339,8 +401,10 @@ async function sendBrevoEmail({ toEmail, toName, subject, htmlContent }) {
 
 // 4. Connection Checker for Brevo (SMTP and/or REST API)
 async function checkBrevoConnection() {
+  const config = getBrevoConfig();
+
   // Check REST API if configured
-  if (BREVO_API_KEY && BREVO_API_KEY.startsWith('xkeysib-')) {
+  if (config.apiKey) {
     try {
       const restResult = await new Promise((resolve) => {
         const options = {
@@ -348,7 +412,7 @@ async function checkBrevoConnection() {
           path: '/v3/account',
           method: 'GET',
           headers: {
-            'api-key': BREVO_API_KEY,
+            'api-key': config.apiKey,
             'Content-Type': 'application/json'
           },
           timeout: 6000
@@ -364,10 +428,10 @@ async function checkBrevoConnection() {
                 resolve({
                   connected: true,
                   status: 'ok',
-                  mode: 'REST API',
+                  mode: 'REST API (HTTPS)',
                   email: parsed.email,
                   companyName: parsed.companyName || parsed.firstName || 'Brevo Account',
-                  message: 'Brevo API key verified successfully'
+                  message: 'Brevo REST API active and verified'
                 });
               } else {
                 resolve({ connected: false, error: parsed.message || data });
@@ -391,7 +455,7 @@ async function checkBrevoConnection() {
   }
 
   // Check SMTP Relay
-  if (BREVO_SMTP_KEY) {
+  if (config.smtpKey) {
     return new Promise(async (resolve) => {
       try {
         const net = await import('net');
@@ -407,10 +471,10 @@ async function checkBrevoConnection() {
               status: 'ok',
               mode: 'SMTP Relay',
               server: 'smtp-relay.brevo.com:587',
-              senderEmail: BREVO_SENDER_EMAIL,
-              senderName: BREVO_SENDER_NAME,
-              keyPrefix: `${BREVO_SMTP_KEY.slice(0, 10)}...${BREVO_SMTP_KEY.slice(-6)}`,
-              message: 'Brevo SMTP Relay active and reachable on port 587'
+              senderEmail: config.senderEmail,
+              senderName: config.senderName,
+              keyPrefix: `${config.smtpKey.slice(0, 10)}...${config.smtpKey.slice(-6)}`,
+              message: 'Brevo SMTP Relay reachable on port 587'
             });
           } else {
             resolve({ connected: false, error: msg });
@@ -728,8 +792,38 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
-  const url = new URL(req.url, `http://localhost:${PORT}`);
-  const pathname = url.pathname;
+  // 0. Static Generated Project Assets Endpoint
+  if (req.method === 'GET' && pathname.startsWith('/api/static-asset/')) {
+    const assetKey = pathname.replace('/api/static-asset/', '').trim();
+    const assetMap = {
+      'hero': 'architects_team_showcase_1790328671629.jpg',
+      'architects-team': 'architects_team_showcase_1790328671629.jpg',
+      'blueprint': 'blueprint_hardhat_desk_1790325552811.jpg',
+      'step1': 'step1_digital_submission_1790326067878.jpg',
+      'step2': 'step2_plan_scrutiny_1790326093035.jpg',
+      'step3': 'document_verification_approve_reject_1790330041197.jpg',
+      'approve-reject': 'document_verification_approve_reject_1790330041197.jpg',
+      'step4': 'step3_field_inspection_1790326118418.jpg',
+      'step5': 'final_approval_certificate_female_worker_1790330753464.jpg',
+      'certificate': 'final_approval_certificate_female_worker_1790330753464.jpg',
+    };
+    const filename = assetMap[assetKey] || assetKey;
+    const brainDir = 'C:\\Users\\Forgeindiaconnect\\.gemini\\antigravity-ide\\brain\\bf747eb1-7f81-4788-840f-4e6be4b5c679';
+    const filePath = path.join(brainDir, filename);
+    if (fs.existsSync(filePath)) {
+      try {
+        const fileBuffer = fs.readFileSync(filePath);
+        res.writeHead(200, {
+          'Content-Type': 'image/jpeg',
+          'Cache-Control': 'public, max-age=86400',
+          'Access-Control-Allow-Origin': '*'
+        });
+        return res.end(fileBuffer);
+      } catch (err) {
+        console.error('Error serving asset:', err);
+      }
+    }
+  }
 
   // 1. Health Check Endpoint
   if (req.method === 'GET' && pathname === '/api/health') {
@@ -835,6 +929,7 @@ const server = http.createServer(async (req, res) => {
     req.on('data', chunk => { body += chunk; });
     req.on('end', async () => {
       try {
+        const config = getBrevoConfig();
         const { toEmail, toName, subject, message, htmlContent } = JSON.parse(body || '{}');
         if (!toEmail) {
           return sendJson(res, 400, { error: 'Recipient email (toEmail) is required' });
@@ -845,7 +940,7 @@ const server = http.createServer(async (req, res) => {
             <p>Hello <strong>${toName || 'User'}</strong>,</p>
             <p>${message || 'This is a confirmation test email sent from your Brevo integration in the Building Approval backend.'}</p>
             <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 20px 0;" />
-            <p style="font-size: 12px; color: #64748b;">Delivered in real-time via Brevo (${BREVO_SENDER_EMAIL})</p>
+            <p style="font-size: 12px; color: #64748b;">Delivered in real-time via Brevo (${config.senderEmail})</p>
           </div>
         `;
 

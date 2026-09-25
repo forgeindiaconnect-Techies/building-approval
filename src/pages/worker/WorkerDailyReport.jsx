@@ -64,14 +64,14 @@ export default function WorkerDailyReport() {
   return (
     <div style={{ paddingBottom: '2.5rem' }}>
 
-      {/* Header Banner - Compact Typography */}
-      <div style={{
-        background: 'linear-gradient(135deg, #003366 0%, #004080 100%)',
-        color: 'white',
+      {/* Header Banner - Clean White Card */}
+      <div className="card" style={{
+        backgroundColor: '#ffffff',
+        border: '1px solid #cbd5e1',
         borderRadius: '12px',
         padding: '1.25rem 1.5rem',
         marginBottom: '1.25rem',
-        boxShadow: '0 6px 18px rgba(0, 51, 102, 0.12)',
+        boxShadow: '0 2px 6px rgba(0, 0, 0, 0.04)',
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
@@ -80,34 +80,41 @@ export default function WorkerDailyReport() {
       }}>
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem' }}>
-            <span style={{ backgroundColor: 'rgba(255,255,255,0.18)', padding: '0.15rem 0.55rem', borderRadius: '14px', fontSize: '0.7rem', fontWeight: 600, letterSpacing: '0.5px' }}>
+            <span style={{ 
+              backgroundColor: 'var(--primary-light, #f1f5f9)', 
+              color: 'var(--primary, #0f2a4a)',
+              padding: '0.2rem 0.6rem', 
+              borderRadius: '6px', 
+              fontSize: '0.7rem', 
+              fontWeight: 700, 
+              letterSpacing: '0.5px' 
+            }}>
               DAILY WORK LOGBOOK
             </span>
-            <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.75rem' }}>•</span>
-            <span style={{ color: 'rgba(255,255,255,0.85)', fontSize: '0.78rem' }}>{workerDisplayName}</span>
+            <span style={{ color: '#94a3b8', fontSize: '0.75rem' }}>•</span>
+            <span style={{ color: '#475569', fontSize: '0.8rem', fontWeight: 600 }}>{workerDisplayName}</span>
           </div>
-          <h2 style={{ fontSize: '1.25rem', fontWeight: 700, margin: 0, color: '#ffffff', letterSpacing: '-0.01em' }}>
+          <h2 style={{ fontSize: '1.25rem', fontWeight: 800, margin: 0, color: '#0f172a', letterSpacing: '-0.01em' }}>
             Field Activity Report
           </h2>
-          <p style={{ margin: '0.2rem 0 0 0', color: 'rgba(255,255,255,0.85)', fontSize: '0.825rem' }}>
+          <p style={{ margin: '0.25rem 0 0 0', color: '#64748b', fontSize: '0.825rem' }}>
             Log your daily verification activities, customer interactions, and field inspections.
           </p>
         </div>
 
         <div style={{
-          backgroundColor: 'rgba(255, 255, 255, 0.12)',
-          backdropFilter: 'blur(8px)',
-          border: '1px solid rgba(255, 255, 255, 0.25)',
+          backgroundColor: '#f8fafc',
+          border: '1px solid #e2e8f0',
           borderRadius: '10px',
           padding: '0.65rem 1.1rem',
           display: 'flex',
           alignItems: 'center',
-          gap: '0.5rem'
+          gap: '0.6rem'
         }}>
-          <Calendar size={16} color="#FF9933" />
+          <Calendar size={18} color="var(--primary, #0F2A4A)" />
           <div>
-            <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.8)', fontWeight: 600, textTransform: 'uppercase' }}>Report Date</div>
-            <div style={{ fontSize: '0.85rem', fontWeight: 800, color: '#ffffff' }}>{dateFormatted}</div>
+            <div style={{ fontSize: '0.68rem', color: '#64748b', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Report Date</div>
+            <div style={{ fontSize: '0.875rem', fontWeight: 800, color: '#0f172a' }}>{dateFormatted}</div>
           </div>
         </div>
       </div>
@@ -205,8 +212,8 @@ export default function WorkerDailyReport() {
         {!todayReport ? (
           <div>
             <div style={{ marginBottom: '1.25rem', borderBottom: '1px solid #e2e8f0', paddingBottom: '0.85rem' }}>
-              <h3 style={{ fontSize: '1.05rem', fontWeight: 700, color: '#003366', margin: 0, display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                <FileText size={18} color="#003366" /> Fill Today's Work Report
+              <h3 style={{ fontSize: '1.05rem', fontWeight: 700, color: 'var(--primary)', margin: 0, display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                <FileText size={18} color="var(--primary)" /> Fill Today's Work Report
               </h3>
               <p style={{ margin: '0.15rem 0 0 0', fontSize: '0.8rem', color: '#64748b' }}>
                 Metrics auto-filled from system activity. Add notes below.
@@ -277,7 +284,7 @@ export default function WorkerDailyReport() {
               {/* Quick Text Template Chips */}
               <div style={{ marginBottom: '0.85rem' }}>
                 <label style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.785rem', fontWeight: 700, color: '#334155', marginBottom: '0.4rem' }}>
-                  <Sparkles size={13} color="#FF9933" /> Quick Insert Notes:
+                  <Sparkles size={13} color="var(--sidebar-active, #D97706)" /> Quick Insert Notes:
                 </label>
                 <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
                   {[
@@ -292,7 +299,7 @@ export default function WorkerDailyReport() {
                       onClick={() => insertQuickText(chip)}
                       style={{
                         backgroundColor: '#f1f5f9',
-                        color: '#003366',
+                        color: 'var(--primary)',
                         border: '1px solid #cbd5e1',
                         borderRadius: '16px',
                         padding: '0.3rem 0.65rem',
@@ -334,7 +341,7 @@ export default function WorkerDailyReport() {
                 type="submit" 
                 style={{
                   width: '100%',
-                  backgroundColor: '#003366',
+                  backgroundColor: 'var(--primary)',
                   color: '#ffffff',
                   border: 'none',
                   borderRadius: '8px',
@@ -346,7 +353,7 @@ export default function WorkerDailyReport() {
                   alignItems: 'center',
                   justifyContent: 'center',
                   gap: '0.4rem',
-                  boxShadow: '0 4px 14px rgba(0, 51, 102, 0.2)'
+                  boxShadow: '0 4px 14px rgba(0, 0, 0, 0.15)'
                 }}
               >
                 <Send size={16} /> Submit Daily Work Report
@@ -379,7 +386,7 @@ export default function WorkerDailyReport() {
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.6rem', backgroundColor: '#f8fafc', padding: '1rem', borderRadius: '8px', border: '1px solid #e2e8f0', marginBottom: '1.25rem', textAlign: 'center' }}>
               <div>
                 <span style={{ fontSize: '0.7rem', color: '#64748b', display: 'block', fontWeight: 700, textTransform: 'uppercase' }}>Applications</span>
-                <strong style={{ fontSize: '1.15rem', color: '#003366' }}>{todayReport.applicationsHandled}</strong>
+                <strong style={{ fontSize: '1.15rem', color: 'var(--primary)' }}>{todayReport.applicationsHandled}</strong>
               </div>
               <div>
                 <span style={{ fontSize: '0.7rem', color: '#64748b', display: 'block', fontWeight: 700, textTransform: 'uppercase' }}>Visits</span>
@@ -435,7 +442,7 @@ export default function WorkerDailyReport() {
         <div style={{ overflowX: 'auto' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.825rem' }}>
             <thead>
-              <tr style={{ backgroundColor: '#e6f0fa', color: '#003366', borderBottom: '1px solid #cbd5e1' }}>
+              <tr style={{ backgroundColor: '#F1F5F9', color: 'var(--primary)', borderBottom: '1px solid #cbd5e1' }}>
                 <th style={{ padding: '0.75rem 1.25rem', fontWeight: 700 }}>Date</th>
                 <th style={{ padding: '0.75rem 1.25rem', fontWeight: 700 }}>Applications</th>
                 <th style={{ padding: '0.75rem 1.25rem', fontWeight: 700 }}>Customer Visits</th>
@@ -459,7 +466,7 @@ export default function WorkerDailyReport() {
                         {rep.date}
                       </span>
                     </td>
-                    <td style={{ padding: '0.75rem 1.25rem', fontWeight: 700, color: '#003366' }}>{rep.applicationsHandled}</td>
+                    <td style={{ padding: '0.75rem 1.25rem', fontWeight: 700, color: 'var(--primary)' }}>{rep.applicationsHandled}</td>
                     <td style={{ padding: '0.75rem 1.25rem', fontWeight: 700, color: '#8b5cf6' }}>{rep.customerVisits}</td>
                     <td style={{ padding: '0.75rem 1.25rem', fontWeight: 700, color: '#0284c7' }}>{rep.siteVisitsCompleted}</td>
                     <td style={{ padding: '0.75rem 1.25rem', fontWeight: 700, color: '#138808' }}>{rep.documentsReviewed}</td>

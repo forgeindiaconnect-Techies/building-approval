@@ -2,7 +2,7 @@ import React from 'react';
 
 export default function ApplicationPagination({ totalItems = 248 }) {
   return (
-    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1rem 1.5rem', borderTop: '1px solid var(--border)', backgroundColor: 'var(--background)' }}>
+    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1rem 1.5rem', borderTop: '1px solid var(--border)', backgroundColor: '#F8FAFC' }}>
       <span style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>
         Showing 1–10 of {totalItems}
       </span>

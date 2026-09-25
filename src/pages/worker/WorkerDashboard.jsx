@@ -34,6 +34,7 @@ export default function WorkerDashboard() {
   const displayName = currentUser 
     ? (currentUser.includes('@') ? currentUser.split('@')[0] : currentUser).replace(/^\w/, c => c.toUpperCase())
     : 'Worker';
+  const workerDisplayName = displayName;
 
   // Quick Register Form State
   const [formData, setFormData] = useState({
@@ -240,7 +241,7 @@ export default function WorkerDashboard() {
           <div>
             <p style={{ color: 'var(--text-muted)', fontSize: '0.725rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.03em' }}>Applications</p>
             <h3 style={{ fontSize: '1.35rem', fontWeight: 800, color: '#0f172a', margin: '0.15rem 0 0 0' }}>{assignedCount}</h3>
-            <span style={{ fontSize: '0.725rem', color: '#003366', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '0.2rem', marginTop: '0.35rem' }}>
+            <span style={{ fontSize: '0.725rem', color: 'var(--primary)', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '0.2rem', marginTop: '0.35rem' }}>
               View list <ChevronRight size={11} />
             </span>
           </div>
@@ -258,7 +259,7 @@ export default function WorkerDashboard() {
           <div>
             <p style={{ color: 'var(--text-muted)', fontSize: '0.725rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.03em' }}>Pending Reviews</p>
             <h3 style={{ fontSize: '1.35rem', fontWeight: 800, color: '#0f172a', margin: '0.15rem 0 0 0' }}>{pendingDocsCount}</h3>
-            <span style={{ fontSize: '0.725rem', color: '#003366', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '0.2rem', marginTop: '0.35rem' }}>
+            <span style={{ fontSize: '0.725rem', color: 'var(--primary)', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '0.2rem', marginTop: '0.35rem' }}>
               Requires action <ChevronRight size={11} />
             </span>
           </div>
@@ -276,7 +277,7 @@ export default function WorkerDashboard() {
           <div>
             <p style={{ color: 'var(--text-muted)', fontSize: '0.725rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.03em' }}>Verified Docs</p>
             <h3 style={{ fontSize: '1.35rem', fontWeight: 800, color: '#0f172a', margin: '0.15rem 0 0 0' }}>{docsVerifiedTotal}</h3>
-            <span style={{ fontSize: '0.725rem', color: '#003366', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '0.2rem', marginTop: '0.35rem' }}>
+            <span style={{ fontSize: '0.725rem', color: 'var(--primary)', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '0.2rem', marginTop: '0.35rem' }}>
               View vault <ChevronRight size={11} />
             </span>
           </div>
@@ -297,7 +298,7 @@ export default function WorkerDashboard() {
               <div style={{ fontSize: '0.785rem', fontWeight: 700, color: isPresent ? '#047857' : 'var(--text-muted)' }}>
                 {isPresent ? '🟢 Attendance Marked' : '🔴 Attendance Pending'}
               </div>
-              <div style={{ fontSize: '0.785rem', fontWeight: 700, color: isReportSubmitted ? '#003366' : 'var(--text-muted)', marginTop: '0.15rem' }}>
+              <div style={{ fontSize: '0.785rem', fontWeight: 700, color: isReportSubmitted ? 'var(--primary)' : 'var(--text-muted)', marginTop: '0.15rem' }}>
                 {isReportSubmitted ? '🔵 Report Submitted' : '⏳ Report Pending'}
               </div>
             </div>
@@ -358,8 +359,8 @@ export default function WorkerDashboard() {
                   fontWeight: 600,
                   border: 'none',
                   cursor: 'pointer',
-                  backgroundColor: statusFilter === tab.id ? 'var(--primary)' : 'var(--background)',
-                  color: statusFilter === tab.id ? 'white' : 'var(--text-muted)',
+                  backgroundColor: statusFilter === tab.id ? 'var(--primary)' : '#F1F5F9',
+                  color: statusFilter === tab.id ? 'white' : '#475569',
                   transition: 'all 0.2s ease'
                 }}
               >
@@ -623,9 +624,9 @@ export default function WorkerDashboard() {
                   </div>
                 )}
 
-                <div style={{ padding: '0.85rem', backgroundColor: 'var(--background)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)', marginBottom: '1.25rem', textAlign: 'left' }}>
-                  <p style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginBottom: '0.2rem' }}>Customer Upload Link:</p>
-                  <p style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-main)', wordBreak: 'break-all', margin: 0 }}>
+                <div style={{ padding: '0.85rem', backgroundColor: '#F8FAFC', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)', marginBottom: '1.25rem', textAlign: 'left' }}>
+                  <p style={{ fontSize: '0.7rem', color: '#475569', marginBottom: '0.2rem' }}>Customer Upload Link:</p>
+                  <p style={{ fontSize: '0.8rem', fontWeight: 600, color: '#0F172A', wordBreak: 'break-all', margin: 0 }}>
                     {`${window.location.origin}/customer-upload/${createdAppId}`}
                   </p>
                 </div>

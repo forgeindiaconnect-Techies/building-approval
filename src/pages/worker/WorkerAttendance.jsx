@@ -19,41 +19,55 @@ export default function WorkerAttendance() {
   const dateFormatted = new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
   const timeFormatted = currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 
-  // Format current worker name nicely
-  const workerDisplayName = currentUser === 'Pooja' || currentUser === 'pooja@gmail.com' ? 'Pooja' : currentUser;
+  // Format current worker name nicely (e.g. thirsha@gmail.com -> Thirsha)
+  const cleanWorkerName = currentUser ? (currentUser.includes('@') ? currentUser.split('@')[0] : currentUser) : 'Worker';
+  const workerDisplayName = cleanWorkerName.replace(/^\w/, c => c.toUpperCase());
 
   // Get today's record for logged in worker
-  const todayRecord = attendanceRecords.find(r => 
-    (r.workerId === currentUser || r.workerName === currentUser) && r.date === todayStr
-  );
+  const todayRecord = attendanceRecords.find(r => {
+    if (r.date !== todayStr) return false;
+    const rId = (r.workerId || '').toLowerCase();
+    const rName = (r.workerName || '').toLowerCase();
+    const userLow = (currentUser || '').toLowerCase();
+    const cleanLow = cleanWorkerName.toLowerCase();
+    return rId === userLow || rName === userLow || rId === cleanLow || rName === cleanLow ||
+           (rId.includes('@') && rId.split('@')[0] === cleanLow) ||
+           (rName.includes('@') && rName.split('@')[0] === cleanLow);
+  });
 
   // Get history records for logged in worker
-  const myHistory = attendanceRecords.filter(r => 
-    r.workerId === currentUser || r.workerName === currentUser
-  );
+  const myHistory = attendanceRecords.filter(r => {
+    const rId = (r.workerId || '').toLowerCase();
+    const rName = (r.workerName || '').toLowerCase();
+    const userLow = (currentUser || '').toLowerCase();
+    const cleanLow = cleanWorkerName.toLowerCase();
+    return rId === userLow || rName === userLow || rId === cleanLow || rName === cleanLow ||
+           (rId.includes('@') && rId.split('@')[0] === cleanLow) ||
+           (rName.includes('@') && rName.split('@')[0] === cleanLow);
+  });
 
   const isCheckedIn = !!todayRecord;
   const isCheckedOut = !!(todayRecord && todayRecord.checkOut);
 
   const handleCheckIn = () => {
-    checkInWorker(currentUser);
+    checkInWorker(workerDisplayName);
   };
 
   const handleCheckOut = () => {
-    checkOutWorker(currentUser);
+    checkOutWorker(workerDisplayName);
   };
 
   return (
     <div style={{ paddingBottom: '2.5rem' }}>
 
-      {/* Header Banner - Compact font sizes */}
-      <div style={{
-        background: 'linear-gradient(135deg, #003366 0%, #004080 100%)',
-        color: 'white',
+      {/* Header Banner - Clean White Card */}
+      <div className="card" style={{
+        backgroundColor: '#ffffff',
+        border: '1px solid #cbd5e1',
         borderRadius: '12px',
         padding: '1.25rem 1.5rem',
         marginBottom: '1.25rem',
-        boxShadow: '0 6px 18px rgba(0, 51, 102, 0.12)',
+        boxShadow: '0 2px 6px rgba(0, 0, 0, 0.04)',
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
@@ -62,33 +76,40 @@ export default function WorkerAttendance() {
       }}>
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem' }}>
-            <span style={{ backgroundColor: 'rgba(255,255,255,0.18)', padding: '0.15rem 0.55rem', borderRadius: '14px', fontSize: '0.7rem', fontWeight: 600, letterSpacing: '0.5px' }}>
+            <span style={{ 
+              backgroundColor: 'var(--primary-light, #f1f5f9)', 
+              color: 'var(--primary, #0f2a4a)',
+              padding: '0.2rem 0.6rem', 
+              borderRadius: '6px', 
+              fontSize: '0.7rem', 
+              fontWeight: 700, 
+              letterSpacing: '0.5px' 
+            }}>
               STAFF ATTENDANCE PORTAL
             </span>
-            <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.75rem' }}>•</span>
-            <span style={{ color: 'rgba(255,255,255,0.85)', fontSize: '0.78rem' }}>{workerDisplayName}</span>
+            <span style={{ color: '#94a3b8', fontSize: '0.75rem' }}>•</span>
+            <span style={{ color: '#475569', fontSize: '0.8rem', fontWeight: 600 }}>{workerDisplayName}</span>
           </div>
-          <h2 style={{ fontSize: '1.25rem', fontWeight: 700, margin: 0, color: '#ffffff', letterSpacing: '-0.01em' }}>
+          <h2 style={{ fontSize: '1.25rem', fontWeight: 800, margin: 0, color: '#0f172a', letterSpacing: '-0.01em' }}>
             My Daily Attendance Log
           </h2>
-          <p style={{ margin: '0.2rem 0 0 0', color: 'rgba(255,255,255,0.85)', fontSize: '0.825rem' }}>
+          <p style={{ margin: '0.25rem 0 0 0', color: '#64748b', fontSize: '0.825rem' }}>
             Record shift check-in and check-out times with automated timestamping.
           </p>
         </div>
 
-        {/* Live Clock Card - Scaled down */}
+        {/* Live Clock Card */}
         <div style={{
-          backgroundColor: 'rgba(255, 255, 255, 0.12)',
-          backdropFilter: 'blur(8px)',
-          border: '1px solid rgba(255, 255, 255, 0.25)',
+          backgroundColor: '#f8fafc',
+          border: '1px solid #e2e8f0',
           borderRadius: '10px',
           padding: '0.65rem 1.1rem',
           textAlign: 'right'
         }}>
-          <div style={{ fontSize: '0.725rem', color: 'rgba(255,255,255,0.8)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+          <div style={{ fontSize: '0.7rem', color: '#64748b', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
             {dateFormatted}
           </div>
-          <div style={{ fontSize: '1.15rem', fontWeight: 800, color: '#ffffff', fontFamily: 'monospace', marginTop: '0.1rem' }}>
+          <div style={{ fontSize: '1.15rem', fontWeight: 800, color: 'var(--primary, #0f172a)', fontFamily: 'monospace', marginTop: '0.1rem' }}>
             {timeFormatted}
           </div>
         </div>
@@ -112,7 +133,7 @@ export default function WorkerAttendance() {
         }}>
           <div>
             <div style={{ fontSize: '0.7rem', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Today's Status</div>
-            <div style={{ fontSize: '0.95rem', fontWeight: 700, color: isCheckedOut ? '#047857' : isCheckedIn ? '#003366' : '#d97706', marginTop: '0.1rem' }}>
+            <div style={{ fontSize: '0.95rem', fontWeight: 700, color: isCheckedOut ? '#047857' : isCheckedIn ? 'var(--primary, #0F2A4A)' : '#d97706', marginTop: '0.1rem' }}>
               {isCheckedOut ? 'Present (Completed)' : isCheckedIn ? 'Logged In (Active)' : 'Not Checked In'}
             </div>
           </div>
@@ -195,10 +216,10 @@ export default function WorkerAttendance() {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', paddingBottom: '0.85rem', borderBottom: '1px solid #e2e8f0' }}>
           <div>
             <h3 style={{ fontSize: '1.05rem', fontWeight: 700, color: '#0f172a', margin: 0, display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-              <Clock size={18} color="#003366" /> Attendance Terminal
+              <Clock size={18} color="var(--primary)" /> Attendance Terminal
             </h3>
             <span style={{ fontSize: '0.785rem', color: '#64748b', display: 'inline-flex', alignItems: 'center', gap: '0.25rem', marginTop: '0.15rem' }}>
-              <MapPin size={12} color="#003366" /> Location: <strong>Chennai South Zone Office</strong>
+              <MapPin size={12} color="var(--primary)" /> Location: <strong>Chennai South Zone Office</strong>
             </span>
           </div>
 
@@ -222,7 +243,7 @@ export default function WorkerAttendance() {
         {/* State 1: Not Checked In */}
         {!isCheckedIn && (
           <div style={{ textAlign: 'center', padding: '1rem' }}>
-            <div style={{ width: '56px', height: '56px', borderRadius: '50%', backgroundColor: '#e6f0fa', color: '#003366', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem' }}>
+            <div style={{ width: '56px', height: '56px', borderRadius: '50%', backgroundColor: 'var(--primary-light)', color: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem' }}>
               <LogIn size={24} />
             </div>
             <h4 style={{ fontSize: '1rem', fontWeight: 700, color: '#0f172a', marginBottom: '0.35rem' }}>
@@ -237,7 +258,7 @@ export default function WorkerAttendance() {
               style={{
                 width: '100%',
                 maxWidth: '320px',
-                backgroundColor: '#003366',
+                backgroundColor: 'var(--primary)',
                 color: '#ffffff',
                 border: 'none',
                 borderRadius: '8px',
@@ -249,7 +270,7 @@ export default function WorkerAttendance() {
                 alignItems: 'center',
                 justifyContent: 'center',
                 gap: '0.4rem',
-                boxShadow: '0 4px 14px rgba(0, 51, 102, 0.2)'
+                boxShadow: '0 4px 14px rgba(0, 0, 0, 0.15)'
               }}
             >
               <CheckCircle size={18} /> Mark Check In Now
@@ -272,7 +293,7 @@ export default function WorkerAttendance() {
             }}>
               <div>
                 <span style={{ fontSize: '0.725rem', color: '#64748b', fontWeight: 700, textTransform: 'uppercase' }}>Check In Timestamp</span>
-                <p style={{ fontSize: '1.15rem', fontWeight: 800, color: '#003366', margin: '0.2rem 0 0 0', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                <p style={{ fontSize: '1.15rem', fontWeight: 800, color: 'var(--primary, #0F2A4A)', margin: '0.2rem 0 0 0', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
                   <LogIn size={16} color="#138808" /> {todayRecord.checkIn}
                 </p>
               </div>
@@ -325,7 +346,7 @@ export default function WorkerAttendance() {
             }}>
               <div>
                 <span style={{ fontSize: '0.725rem', color: '#64748b', fontWeight: 700, textTransform: 'uppercase' }}>Check In</span>
-                <p style={{ fontSize: '1rem', fontWeight: 800, color: '#003366', margin: '0.2rem 0 0 0' }}>
+                <p style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--primary, #0F2A4A)', margin: '0.2rem 0 0 0' }}>
                   {todayRecord.checkIn}
                 </p>
               </div>
@@ -392,7 +413,7 @@ export default function WorkerAttendance() {
         <div style={{ overflowX: 'auto' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.825rem' }}>
             <thead>
-              <tr style={{ backgroundColor: '#e6f0fa', color: '#003366', borderBottom: '1px solid #cbd5e1' }}>
+              <tr style={{ backgroundColor: '#F1F5F9', color: 'var(--primary)', borderBottom: '1px solid #cbd5e1' }}>
                 <th style={{ padding: '0.75rem 1.25rem', fontWeight: 700 }}>Date</th>
                 <th style={{ padding: '0.75rem 1.25rem', fontWeight: 700 }}>Check In</th>
                 <th style={{ padding: '0.75rem 1.25rem', fontWeight: 700 }}>Check Out</th>

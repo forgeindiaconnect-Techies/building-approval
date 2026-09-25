@@ -8,17 +8,27 @@ export default function WorkerTracking() {
   
   // Add Worker Modal state
   const [showAddWorkerModal, setShowAddWorkerModal] = useState(false);
-  const [newWorkerName, setNewWorkerName] = useState('');
+  const [newWorkerUsername, setNewWorkerUsername] = useState('');
+  const [newWorkerEmail, setNewWorkerEmail] = useState('');
   const [newWorkerPassword, setNewWorkerPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
 
   const todayStr = new Date().toISOString().split('T')[0];
   const dateFormatted = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
 
-  // Registered field worker names
+  // Clean and deduplicate registered field worker names
   const defaultWorkers = ['Pooja', 'Arun', 'Kumar', 'Suresh'];
-  const registeredUsernames = workers.map(w => w.username || w.name);
-  const workerList = Array.from(new Set([...registeredUsernames, ...defaultWorkers]));
+  const registeredUsernames = workers.map(w => {
+    const raw = w.username || w.name || '';
+    return raw.includes('@') ? raw.split('@')[0] : raw;
+  }).filter(Boolean);
+
+  const workerMap = new Map();
+  [...defaultWorkers, ...registeredUsernames].forEach(name => {
+    const clean = name.trim().replace(/^\w/, c => c.toUpperCase());
+    workerMap.set(clean.toLowerCase(), clean);
+  });
+  const workerList = Array.from(workerMap.values());
 
   // Calculate live overall metrics
   const todayAttendanceList = attendanceRecords.filter(r => r.date === todayStr);
@@ -152,12 +162,12 @@ export default function WorkerTracking() {
         </div>
       </div>
 
-      {/* Today's Worker Activity Table (Step 18.3) */}
-      <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
-        <div style={{ padding: '1.25rem 1.5rem', borderBottom: '1px solid var(--border)', backgroundColor: 'var(--background)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      {/* Today's Worker Activity Table */}
+      <div className="card" style={{ padding: 0, overflow: 'hidden', backgroundColor: '#FFFFFF' }}>
+        <div style={{ padding: '1.25rem 1.5rem', borderBottom: '1px solid var(--border)', backgroundColor: '#F8FAFC', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
-            <h3 style={{ fontSize: '1.125rem', fontWeight: 700, color: 'var(--text-main)' }}>Today's Worker Activity</h3>
-            <p style={{ fontSize: '0.8125rem', color: 'var(--text-muted)' }}>Real-time overview for {dateFormatted}</p>
+            <h3 style={{ fontSize: '1.125rem', fontWeight: 700, color: '#0F172A' }}>Today's Worker Activity</h3>
+            <p style={{ fontSize: '0.8125rem', color: '#475569' }}>Real-time overview for {dateFormatted}</p>
           </div>
           <span style={{ fontSize: '0.75rem', backgroundColor: 'var(--primary-light)', color: 'var(--primary)', padding: '0.25rem 0.65rem', borderRadius: '1rem', fontWeight: 600 }}>
             Live Sync Active 🔄
@@ -247,38 +257,38 @@ export default function WorkerTracking() {
       {/* Worker Detail Activity Modal (Step 18.4) */}
       {selectedWorkerModal && (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 999, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <div className="card" style={{ width: '600px', backgroundColor: 'var(--background)', maxHeight: '90vh', overflowY: 'auto' }}>
+          <div className="card" style={{ width: '600px', backgroundColor: '#FFFFFF', maxHeight: '90vh', overflowY: 'auto' }}>
             {/* Modal Header */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', borderBottom: '1px solid var(--border)', paddingBottom: '1rem' }}>
               <div>
                 <h3 style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--primary)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                   Worker Activity — {selectedWorkerModal.workerName}
                 </h3>
-                <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>Detailed tracking log for {dateFormatted}</p>
+                <p style={{ fontSize: '0.875rem', color: '#475569' }}>Detailed tracking log for {dateFormatted}</p>
               </div>
-              <button onClick={() => setSelectedWorkerModal(null)} style={{ background: 'none', border: 'none', fontSize: '1.5rem', cursor: 'pointer', color: 'var(--text-muted)' }}>&times;</button>
+              <button onClick={() => setSelectedWorkerModal(null)} style={{ background: 'none', border: 'none', fontSize: '1.5rem', cursor: 'pointer', color: '#475569' }}>&times;</button>
             </div>
 
             {/* 1. Attendance Section */}
-            <div className="card" style={{ marginBottom: '1.25rem', padding: '1.25rem', backgroundColor: 'white' }}>
-              <h4 style={{ fontSize: '0.9375rem', fontWeight: 700, color: 'var(--text-main)', marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <div className="card" style={{ marginBottom: '1.25rem', padding: '1.25rem', backgroundColor: '#F8FAFC' }}>
+              <h4 style={{ fontSize: '0.9375rem', fontWeight: 700, color: '#0F172A', marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                 <Clock size={16} color="var(--primary)" /> Attendance Log
               </h4>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem', fontSize: '0.875rem' }}>
                 <div>
-                  <span style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>Check In</span>
-                  <p style={{ fontWeight: 700, color: selectedWorkerModal.checkIn ? 'var(--success)' : 'var(--text-muted)' }}>
+                  <span style={{ color: '#475569', fontSize: '0.75rem' }}>Check In</span>
+                  <p style={{ fontWeight: 700, color: selectedWorkerModal.checkIn ? 'var(--success)' : '#475569' }}>
                     {selectedWorkerModal.checkIn || '09:15 AM'}
                   </p>
                 </div>
                 <div>
-                  <span style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>Check Out</span>
-                  <p style={{ fontWeight: 700, color: selectedWorkerModal.checkOut ? '#dc2626' : 'var(--text-muted)' }}>
+                  <span style={{ color: '#475569', fontSize: '0.75rem' }}>Check Out</span>
+                  <p style={{ fontWeight: 700, color: selectedWorkerModal.checkOut ? '#dc2626' : '#475569' }}>
                     {selectedWorkerModal.checkOut || '06:05 PM'}
                   </p>
                 </div>
                 <div>
-                  <span style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>Status</span>
+                  <span style={{ color: '#475569', fontSize: '0.75rem' }}>Status</span>
                   <p style={{ fontWeight: 700, color: selectedWorkerModal.isPresent ? 'var(--success)' : 'var(--danger)' }}>
                     {selectedWorkerModal.isPresent ? 'Present ✓' : 'Not Checked In'}
                   </p>
@@ -287,18 +297,18 @@ export default function WorkerTracking() {
             </div>
 
             {/* 2. Applications Registered Section */}
-            <div className="card" style={{ marginBottom: '1.25rem', padding: '1.25rem', backgroundColor: 'white' }}>
-              <h4 style={{ fontSize: '0.9375rem', fontWeight: 700, color: 'var(--text-main)', marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <div className="card" style={{ marginBottom: '1.25rem', padding: '1.25rem', backgroundColor: '#F8FAFC' }}>
+              <h4 style={{ fontSize: '0.9375rem', fontWeight: 700, color: '#0F172A', marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                 <FileText size={16} color="var(--primary)" /> Applications ({selectedWorkerModal.applications.length})
               </h4>
               {selectedWorkerModal.applications.length === 0 ? (
-                <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>No applications registered by this worker yet.</p>
+                <p style={{ fontSize: '0.875rem', color: '#475569' }}>No applications registered by this worker yet.</p>
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                   {selectedWorkerModal.applications.map(app => (
-                    <div key={app.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '0.5rem 0.75rem', backgroundColor: 'var(--background)', borderRadius: 'var(--radius-sm)', fontSize: '0.875rem' }}>
+                    <div key={app.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '0.5rem 0.75rem', backgroundColor: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: 'var(--radius-sm)', fontSize: '0.875rem' }}>
                       <span style={{ fontWeight: 600, color: 'var(--primary)' }}>{app.id} — {app.applicantName}</span>
-                      <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{app.location || 'Hosur'}</span>
+                      <span style={{ fontSize: '0.75rem', color: '#475569' }}>{app.location || 'Hosur'}</span>
                     </div>
                   ))}
                 </div>
@@ -307,33 +317,33 @@ export default function WorkerTracking() {
 
             {/* 3. Documents & Site Visits Grid */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.25rem' }}>
-              <div className="card" style={{ padding: '1.25rem', backgroundColor: 'white' }}>
-                <h4 style={{ fontSize: '0.9375rem', fontWeight: 700, color: 'var(--text-main)', marginBottom: '0.5rem' }}>Documents Reviewed</h4>
+              <div className="card" style={{ padding: '1.25rem', backgroundColor: '#F8FAFC' }}>
+                <h4 style={{ fontSize: '0.9375rem', fontWeight: 700, color: '#0F172A', marginBottom: '0.5rem' }}>Documents Reviewed</h4>
                 <p style={{ fontSize: '1.25rem', fontWeight: 700, color: '#0284c7' }}>{selectedWorkerModal.docCount} Total Reviewed</p>
-                <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>
+                <p style={{ fontSize: '0.75rem', color: '#475569', marginTop: '0.25rem' }}>
                   ✓ {selectedWorkerModal.verifiedCount} Verified • ⚠️ {selectedWorkerModal.reuploadCount} Re-upload
                 </p>
               </div>
 
-              <div className="card" style={{ padding: '1.25rem', backgroundColor: 'white' }}>
-                <h4 style={{ fontSize: '0.9375rem', fontWeight: 700, color: 'var(--text-main)', marginBottom: '0.5rem' }}>Site Visits</h4>
+              <div className="card" style={{ padding: '1.25rem', backgroundColor: '#F8FAFC' }}>
+                <h4 style={{ fontSize: '0.9375rem', fontWeight: 700, color: '#0F172A', marginBottom: '0.5rem' }}>Site Visits</h4>
                 <p style={{ fontSize: '1.25rem', fontWeight: 700, color: '#8b5cf6' }}>{selectedWorkerModal.siteVisits} Completed</p>
-                <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>Site verification active</p>
+                <p style={{ fontSize: '0.75rem', color: '#475569', marginTop: '0.25rem' }}>Site verification active</p>
               </div>
             </div>
 
             {/* 4. Daily Report Section */}
-            <div className="card" style={{ padding: '1.25rem', backgroundColor: 'white', marginBottom: '1.5rem' }}>
-              <h4 style={{ fontSize: '0.9375rem', fontWeight: 700, color: 'var(--text-main)', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <div className="card" style={{ padding: '1.25rem', backgroundColor: '#F8FAFC', marginBottom: '1.5rem' }}>
+              <h4 style={{ fontSize: '0.9375rem', fontWeight: 700, color: '#0F172A', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                 <CheckCircle size={16} color="var(--success)" /> Daily Report
               </h4>
               {selectedWorkerModal.isReportSubmitted ? (
                 <div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', fontSize: '0.8125rem' }}>
                     <span style={{ color: 'var(--success)', fontWeight: 600 }}>✓ Submitted</span>
-                    <span style={{ color: 'var(--text-muted)' }}>Submitted at {selectedWorkerModal.report?.submittedAt || '06:20 PM'}</span>
+                    <span style={{ color: '#475569' }}>Submitted at {selectedWorkerModal.report?.submittedAt || '06:20 PM'}</span>
                   </div>
-                  <div style={{ backgroundColor: 'var(--background)', padding: '0.75rem', borderRadius: 'var(--radius-sm)', fontSize: '0.875rem', color: 'var(--text-main)' }}>
+                  <div style={{ backgroundColor: '#FFFFFF', border: '1px solid #E2E8F0', padding: '0.75rem', borderRadius: 'var(--radius-sm)', fontSize: '0.875rem', color: '#0F172A' }}>
                     {selectedWorkerModal.report?.description || 'Registered customers and completed site verification activities today.'}
                   </div>
                 </div>
@@ -351,34 +361,77 @@ export default function WorkerTracking() {
 
       {/* Add Worker Modal */}
       {showAddWorkerModal && (
-        <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000 }}>
-          <div className="card" style={{ width: '100%', maxWidth: '420px', padding: '1.5rem', boxShadow: 'var(--shadow-lg)' }}>
-            <h3 style={{ marginBottom: '1.25rem', color: 'var(--primary)', fontSize: '1.2rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <UserPlus size={20} /> Add New Worker
+        <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000, padding: '1rem' }}>
+          <div className="card" style={{ width: '100%', maxWidth: '440px', padding: '1.5rem', boxShadow: 'var(--shadow-lg)', borderRadius: '16px' }}>
+            <h3 style={{ marginBottom: '1.25rem', color: 'var(--primary)', fontSize: '1.2rem', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <UserPlus size={20} /> Register Field Worker
             </h3>
             <form onSubmit={(e) => {
               e.preventDefault();
-              if (newWorkerName.trim() && newWorkerPassword.trim()) {
-                addNewWorker(newWorkerName.trim(), newWorkerPassword.trim());
-                setNewWorkerName('');
+              if (newWorkerUsername.trim() && newWorkerPassword.trim()) {
+                addNewWorker({
+                  username: newWorkerUsername.trim(),
+                  email: newWorkerEmail.trim() || `${newWorkerUsername.trim().toLowerCase()}@gmail.com`,
+                  password: newWorkerPassword.trim()
+                });
+                setNewWorkerUsername('');
+                setNewWorkerEmail('');
                 setNewWorkerPassword('');
                 setShowAddWorkerModal(false);
               }
-            }}>
+            }} autoComplete="off">
+              <input type="text" name="decoy_user_track" style={{ display: 'none' }} tabIndex="-1" autoComplete="off" />
+              <input type="password" name="decoy_pass_track" style={{ display: 'none' }} tabIndex="-1" autoComplete="new-password" />
+
+              {/* Field 1: Worker Username */}
               <div className="form-group" style={{ marginBottom: '1rem' }}>
-                <label className="form-label" style={{ fontWeight: 600, fontSize: '0.85rem', marginBottom: '0.35rem', display: 'block' }}>Worker Name (Username)</label>
+                <label className="form-label" style={{ fontWeight: 700, fontSize: '0.825rem', marginBottom: '0.35rem', display: 'block', color: 'var(--text-main)' }}>
+                  Worker Username *
+                </label>
                 <input 
                   type="text" 
+                  name="worker_track_reg_user"
+                  autoComplete="off"
+                  autoCorrect="off"
+                  autoCapitalize="off"
+                  spellCheck="false"
                   className="form-control" 
-                  value={newWorkerName} 
-                  onChange={(e) => setNewWorkerName(e.target.value)} 
-                  placeholder="e.g. Ramesh"
+                  value={newWorkerUsername} 
+                  onChange={(e) => {
+                    let val = e.target.value;
+                    if (val.includes('@') && !newWorkerEmail) {
+                      setNewWorkerEmail(val);
+                      val = val.split('@')[0];
+                    }
+                    setNewWorkerUsername(val);
+                  }} 
+                  placeholder="e.g. thirsha"
                   required
-                  style={{ width: '100%', padding: '0.5rem 0.75rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)' }}
+                  style={{ width: '100%', padding: '0.55rem 0.75rem', borderRadius: '8px', border: '1px solid var(--border)', fontSize: '0.85rem' }}
                 />
               </div>
+
+              {/* Field 2: Worker Email Address */}
+              <div className="form-group" style={{ marginBottom: '1rem' }}>
+                <label className="form-label" style={{ fontWeight: 700, fontSize: '0.825rem', marginBottom: '0.35rem', display: 'block', color: 'var(--text-main)' }}>
+                  Worker Email Address *
+                </label>
+                <input 
+                  type="email" 
+                  className="form-control" 
+                  value={newWorkerEmail} 
+                  onChange={(e) => setNewWorkerEmail(e.target.value)} 
+                  placeholder="e.g. thirsha@gmail.com"
+                  required
+                  style={{ width: '100%', padding: '0.55rem 0.75rem', borderRadius: '8px', border: '1px solid var(--border)', fontSize: '0.85rem' }}
+                />
+              </div>
+
+              {/* Field 3: Login Password */}
               <div className="form-group" style={{ marginBottom: '1.25rem' }}>
-                <label className="form-label" style={{ fontWeight: 600, fontSize: '0.85rem', marginBottom: '0.35rem', display: 'block' }}>Password</label>
+                <label className="form-label" style={{ fontWeight: 700, fontSize: '0.825rem', marginBottom: '0.35rem', display: 'block', color: 'var(--text-main)' }}>
+                  Login Password *
+                </label>
                 <div style={{ position: 'relative' }}>
                   <input 
                     type={showPassword ? 'text' : 'password'} 
@@ -387,7 +440,7 @@ export default function WorkerTracking() {
                     onChange={(e) => setNewWorkerPassword(e.target.value)} 
                     placeholder="Enter worker password"
                     required
-                    style={{ width: '100%', padding: '0.5rem 2.5rem 0.5rem 0.75rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)' }}
+                    style={{ width: '100%', padding: '0.55rem 2.5rem 0.55rem 0.75rem', borderRadius: '8px', border: '1px solid var(--border)', fontSize: '0.85rem' }}
                   />
                   <button 
                     type="button"
@@ -398,9 +451,10 @@ export default function WorkerTracking() {
                   </button>
                 </div>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem', paddingTop: '1rem', borderTop: '1px solid var(--border)' }}>
-                <button type="button" className="btn btn-outline" onClick={() => { setShowAddWorkerModal(false); setNewWorkerName(''); setNewWorkerPassword(''); setShowPassword(false); }}>Cancel</button>
-                <button type="submit" className="btn btn-primary" style={{ fontWeight: 600 }}>Add Worker</button>
+
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.65rem', paddingTop: '1rem', borderTop: '1px solid var(--border)' }}>
+                <button type="button" className="btn btn-outline" onClick={() => { setShowAddWorkerModal(false); setNewWorkerUsername(''); setNewWorkerEmail(''); setNewWorkerPassword(''); setShowPassword(false); }}>Cancel</button>
+                <button type="submit" className="btn btn-primary" style={{ fontWeight: 700 }}>Register Worker</button>
               </div>
             </form>
           </div>

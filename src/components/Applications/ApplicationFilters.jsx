@@ -5,11 +5,11 @@ export default function ApplicationFilters({ searchTerm, setSearchTerm, workerFi
   const activeFiltersCount = (searchTerm ? 1 : 0) + (workerFilter !== 'ALL' ? 1 : 0) + (statusFilter !== 'ALL' ? 1 : 0);
 
   return (
-    <div style={{ padding: '1rem 1.25rem', borderBottom: '1px solid var(--border)', backgroundColor: 'var(--background)' }}>
-      <div style={{ display: 'flex', gap: '0.85rem', alignItems: 'center', flexWrap: 'wrap', justifyContent: 'space-between' }}>
+    <div style={{ padding: '0.85rem 1rem', borderBottom: '1px solid var(--border)', backgroundColor: '#F8FAFC' }}>
+      <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap', justifyContent: 'space-between' }}>
         
         {/* Search Bar with Instant Clear */}
-        <div style={{ position: 'relative', flex: 1, minWidth: '260px', maxWidth: '450px' }}>
+        <div style={{ position: 'relative', flex: '1 1 220px', minWidth: '0', width: '100%', maxWidth: '100%' }}>
           <Search size={16} style={{ position: 'absolute', left: '0.85rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
           <input 
             type="text" 
@@ -42,12 +42,12 @@ export default function ApplicationFilters({ searchTerm, setSearchTerm, workerFi
         </div>
 
         {/* Dropdown Select Filters */}
-        <div style={{ display: 'flex', gap: '0.65rem', flexWrap: 'wrap', alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'center', width: 'auto', flex: '1 1 auto' }}>
           <select 
             className="form-control" 
             value={workerFilter} 
             onChange={e => setWorkerFilter(e.target.value)} 
-            style={{ width: 'auto', minWidth: '130px', fontSize: '0.825rem', padding: '0.45rem 0.65rem' }}
+            style={{ flex: '1 1 120px', minWidth: '110px', fontSize: '0.825rem', padding: '0.45rem 0.65rem' }}
           >
             <option value="ALL">All Workers ▼</option>
             {workers.map(w => (
@@ -62,7 +62,7 @@ export default function ApplicationFilters({ searchTerm, setSearchTerm, workerFi
             className="form-control" 
             value={statusFilter} 
             onChange={e => setStatusFilter(e.target.value)} 
-            style={{ width: 'auto', minWidth: '140px', fontSize: '0.825rem', padding: '0.45rem 0.65rem' }}
+            style={{ flex: '1 1 120px', minWidth: '120px', fontSize: '0.825rem', padding: '0.45rem 0.65rem' }}
           >
             <option value="ALL">All Status ▼</option>
             <option value="pending">Pending Documents</option>
@@ -74,7 +74,7 @@ export default function ApplicationFilters({ searchTerm, setSearchTerm, workerFi
           <button 
             className="btn btn-outline" 
             onClick={onReset} 
-            style={{ padding: '0.45rem 0.85rem', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}
+            style={{ padding: '0.45rem 0.75rem', fontSize: '0.78rem', display: 'flex', alignItems: 'center', gap: '0.35rem', flexShrink: 0 }}
           >
             <Filter size={13} /> Reset {activeFiltersCount > 0 && `(${activeFiltersCount})`}
           </button>

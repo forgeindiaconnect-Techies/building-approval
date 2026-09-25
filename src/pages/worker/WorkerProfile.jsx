@@ -30,14 +30,14 @@ export default function WorkerProfile() {
   return (
     <div style={{ paddingBottom: '2.5rem' }}>
 
-      {/* Header Banner - Compact Typography */}
-      <div style={{
-        background: 'linear-gradient(135deg, #003366 0%, #004080 100%)',
-        color: 'white',
+      {/* Header Banner - Clean White Card */}
+      <div className="card" style={{
+        backgroundColor: '#ffffff',
+        border: '1px solid #cbd5e1',
         borderRadius: '12px',
         padding: '1.25rem 1.5rem',
         marginBottom: '1.25rem',
-        boxShadow: '0 6px 18px rgba(0, 51, 102, 0.12)',
+        boxShadow: '0 2px 6px rgba(0, 0, 0, 0.04)',
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
@@ -46,16 +46,24 @@ export default function WorkerProfile() {
       }}>
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem' }}>
-            <span style={{ backgroundColor: 'rgba(255,255,255,0.18)', padding: '0.15rem 0.55rem', borderRadius: '14px', fontSize: '0.7rem', fontWeight: 600, letterSpacing: '0.5px' }}>
+            <span style={{ 
+              backgroundColor: 'var(--primary-light, #f1f5f9)', 
+              color: 'var(--primary, #0f2a4a)',
+              padding: '0.2rem 0.6rem', 
+              borderRadius: '6px', 
+              fontSize: '0.7rem', 
+              fontWeight: 700, 
+              letterSpacing: '0.5px' 
+            }}>
               OFFICIAL PERSONNEL FILE
             </span>
-            <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.75rem' }}>•</span>
-            <span style={{ color: 'rgba(255,255,255,0.85)', fontSize: '0.78rem' }}>ID: WRK-2026-089</span>
+            <span style={{ color: '#94a3b8', fontSize: '0.75rem' }}>•</span>
+            <span style={{ color: '#475569', fontSize: '0.8rem', fontWeight: 600 }}>ID: WRK-2026-089</span>
           </div>
-          <h2 style={{ fontSize: '1.25rem', fontWeight: 700, margin: 0, color: '#ffffff', letterSpacing: '-0.01em' }}>
+          <h2 style={{ fontSize: '1.25rem', fontWeight: 800, margin: 0, color: '#0f172a', letterSpacing: '-0.01em' }}>
             Field Officer Profile
           </h2>
-          <p style={{ margin: '0.2rem 0 0 0', color: 'rgba(255,255,255,0.85)', fontSize: '0.825rem' }}>
+          <p style={{ margin: '0.25rem 0 0 0', color: '#64748b', fontSize: '0.825rem' }}>
             Department of Municipal Administration & Building Approval
           </p>
         </div>
@@ -74,7 +82,7 @@ export default function WorkerProfile() {
             display: 'flex',
             alignItems: 'center',
             gap: '0.35rem',
-            boxShadow: '0 3px 10px rgba(220, 38, 38, 0.25)'
+            boxShadow: '0 2px 6px rgba(220, 38, 38, 0.25)'
           }}
         >
           <LogOut size={14} /> Logout Account
@@ -89,7 +97,7 @@ export default function WorkerProfile() {
           backgroundColor: '#ffffff',
           borderRadius: '12px',
           border: '1px solid #e2e8f0',
-          borderLeft: '5px solid #003366',
+          borderLeft: '5px solid var(--primary)',
           boxShadow: '0 2px 10px rgba(0,0,0,0.03)',
           padding: '1.25rem'
         }}>
@@ -98,7 +106,7 @@ export default function WorkerProfile() {
               width: '54px',
               height: '54px',
               borderRadius: '50%',
-              backgroundColor: '#003366',
+              backgroundColor: 'var(--primary)',
               color: '#ffffff',
               display: 'flex',
               alignItems: 'center',
@@ -107,7 +115,7 @@ export default function WorkerProfile() {
               fontWeight: 800,
               lineHeight: 1,
               textAlign: 'center',
-              boxShadow: '0 3px 8px rgba(0,51,102,0.2)'
+              boxShadow: '0 3px 8px rgba(0,0,0,0.15)'
             }}>
               {workerDisplayName.charAt(0).toUpperCase()}
             </div>
@@ -116,8 +124,8 @@ export default function WorkerProfile() {
                 {workerDisplayName}
               </h3>
               <span style={{
-                backgroundColor: '#e6f0fa',
-                color: '#003366',
+                backgroundColor: 'var(--primary-light)',
+                color: 'var(--primary)',
                 fontWeight: 700,
                 fontSize: '0.75rem',
                 padding: '0.2rem 0.5rem',
@@ -142,19 +150,19 @@ export default function WorkerProfile() {
             border: '1px solid #f1f5f9'
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <Mail size={14} color="#003366" />
+              <Mail size={14} color="var(--primary)" />
               <strong>Email:</strong> pooja@gmail.com
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <Phone size={14} color="#003366" />
+              <Phone size={14} color="var(--primary)" />
               <strong>Contact:</strong> +91 98765 43210
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <Building size={14} color="#003366" />
+              <Building size={14} color="var(--primary)" />
               <strong>Dept:</strong> Municipal Building Approval
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <MapPin size={14} color="#003366" />
+              <MapPin size={14} color="var(--primary)" />
               <strong>Assigned Zone:</strong> Chennai South Zone 4
             </div>
           </div>
@@ -173,13 +181,13 @@ export default function WorkerProfile() {
         }}>
           <div>
             <h4 style={{ fontSize: '1rem', fontWeight: 800, color: '#0f172a', margin: '0 0 1rem 0', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-              <Award size={18} color="#FF9933" /> Performance Scorecard
+              <Award size={18} color="var(--sidebar-active, #D97706)" /> Performance Scorecard
             </h4>
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '1rem' }}>
-              <div style={{ backgroundColor: '#e6f0fa', padding: '0.75rem', borderRadius: '8px', border: '1px solid #bae6fd' }}>
-                <div style={{ fontSize: '0.7rem', fontWeight: 700, color: '#003366', textTransform: 'uppercase' }}>Applications</div>
-                <div style={{ fontSize: '1.25rem', fontWeight: 800, color: '#003366', marginTop: '0.1rem' }}>{workerApps.length}</div>
+              <div style={{ backgroundColor: 'var(--primary-light)', padding: '0.75rem', borderRadius: '8px', border: '1px solid #cbd5e1' }}>
+                <div style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--primary)', textTransform: 'uppercase' }}>Applications</div>
+                <div style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--primary)', marginTop: '0.1rem' }}>{workerApps.length}</div>
               </div>
 
               <div style={{ backgroundColor: '#e7f5e8', padding: '0.75rem', borderRadius: '8px', border: '1px solid #bbf7d0' }}>

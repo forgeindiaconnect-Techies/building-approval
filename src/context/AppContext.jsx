@@ -352,7 +352,23 @@ export const AppProvider = ({ children }) => {
   
   const [notifications, setNotifications] = useState(() => {
     const saved = localStorage.getItem('building_notifications');
-    return saved ? JSON.parse(saved) : initialNotifications;
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) {
+          const seen = new Set();
+          return parsed.filter(item => {
+            if (!item || !item.id) return false;
+            if (seen.has(item.id)) return false;
+            seen.add(item.id);
+            return true;
+          });
+        }
+      } catch (e) {
+        console.error('Error parsing notifications:', e);
+      }
+    }
+    return initialNotifications;
   });
 
   const [workerLogs, setWorkerLogs] = useState(() => {
@@ -370,11 +386,129 @@ export const AppProvider = ({ children }) => {
     return saved ? JSON.parse(saved) : [];
   });
 
+  // Custom Dashboard & Sidebar Theme Customization
+  const defaultThemeSettings = {
+    adminSidebarBg: '#0F2A4A',       // Default Deep Navy
+    workerSidebarBg: '#1E293B',      // Default Slate Charcoal
+    sidebarActiveColor: '#D97706',   // Default Gold Amber
+    dashboardPrimary: '#0F2A4A',     // Default Primary
+    dashboardAccent: '#2563EB',      // Default Accent Blue
+    dashboardBackground: '#F8FAFC',  // Default Light Slate
+    themePreset: 'classic_navy'
+  };
+
+  const [themeSettings, setThemeSettings] = useState(() => {
+    try {
+      const saved = localStorage.getItem('building_theme_settings_v1');
+      return saved ? { ...defaultThemeSettings, ...JSON.parse(saved) } : defaultThemeSettings;
+    } catch {
+      return defaultThemeSettings;
+    }
+  });
+
+  const updateThemeSettings = (newSettings) => {
+    setThemeSettings(prev => {
+      const updated = { ...prev, ...newSettings };
+      try {
+        localStorage.setItem('building_theme_settings_v1', JSON.stringify(updated));
+      } catch (e) {}
+      return updated;
+    });
+  };
+
+  const resetThemeSettings = () => {
+    setThemeSettings(defaultThemeSettings);
+    try {
+      localStorage.setItem('building_theme_settings_v1', JSON.stringify(defaultThemeSettings));
+    } catch (e) {}
+  };
+
+  // Responsive Sidebar & Hamburger Menu State
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+
+  const toggleSidebar = () => {
+    if (typeof window !== 'undefined' && window.innerWidth < 1024) {
+      setIsMobileSidebarOpen(prev => !prev);
+    } else {
+      setIsSidebarOpen(prev => !prev);
+    }
+  };
+
+  const closeMobileSidebar = () => setIsMobileSidebarOpen(false);
+
   // Real-Time Live Sync & Simulation State
   const [isRealTimeEnabled, setIsRealTimeEnabled] = useState(false);
   const [lastLiveSync, setLastLiveSync] = useState(() => new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
   const [liveToasts, setLiveToasts] = useState([]);
   const [lastUpdatedAppId, setLastUpdatedAppId] = useState(null);
+
+  // Helper to calculate luminance for contrast guard
+  const getLuminance = (hexColor) => {
+    if (!hexColor || typeof hexColor !== 'string') return 1;
+    let color = hexColor.replace('#', '').trim();
+    if (color.length === 3) {
+      color = color.split('').map(c => c + c).join('');
+    }
+    if (color.length !== 6) return 1;
+    const r = parseInt(color.substr(0, 2), 16) / 255;
+    const g = parseInt(color.substr(2, 2), 16) / 255;
+    const b = parseInt(color.substr(4, 2), 16) / 255;
+    
+    const a = [r, g, b].map(v => {
+      return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+    });
+    return a[0] * 0.2126 + a[1] * 0.7152 + a[2] * 0.0722;
+  };
+
+  // Apply Live Theme CSS Variables with High-Contrast Canvas Protection
+  useEffect(() => {
+    const root = document.documentElement;
+    const isWorker = currentUser && currentUser !== 'Admin';
+    const activeSidebar = isWorker ? (themeSettings.workerSidebarBg || themeSettings.adminSidebarBg || '#0F2A4A') : (themeSettings.adminSidebarBg || '#0F2A4A');
+    const primary = themeSettings.dashboardPrimary || '#0F2A4A';
+    const activeColor = themeSettings.sidebarActiveColor || '#D97706';
+    const accent = themeSettings.dashboardAccent || '#2563EB';
+    const background = themeSettings.dashboardBackground || '#F8FAFC';
+
+    // Contrast calculation
+    const bgLuminance = getLuminance(background);
+    const isDarkCanvas = bgLuminance < 0.45;
+
+    root.style.setProperty('--primary', primary);
+    root.style.setProperty('--primary-hover', primary);
+    root.style.setProperty('--primary-light', `${primary}18`);
+    root.style.setProperty('--sidebar-bg', activeSidebar);
+    root.style.setProperty('--sidebar-active', activeColor);
+    root.style.setProperty('--accent', accent);
+    root.style.setProperty('--background', background);
+    root.style.setProperty('--surface', '#FFFFFF');
+
+    // High Contrast Canvas Typography & Header Safeguards
+    if (isDarkCanvas) {
+      root.style.setProperty('--canvas-title', '#FFFFFF');
+      root.style.setProperty('--canvas-sub', '#E2E8F0');
+      root.style.setProperty('--canvas-pill-bg', 'rgba(255, 255, 255, 0.2)');
+      root.style.setProperty('--canvas-pill-border', 'rgba(255, 255, 255, 0.4)');
+      root.style.setProperty('--canvas-pill-text', '#FFFFFF');
+      root.style.setProperty('--canvas-btn-bg', 'rgba(255, 255, 255, 0.18)');
+      root.style.setProperty('--canvas-btn-border', 'rgba(255, 255, 255, 0.45)');
+      root.style.setProperty('--canvas-btn-color', '#FFFFFF');
+    } else {
+      root.style.setProperty('--canvas-title', '#0F172A');
+      root.style.setProperty('--canvas-sub', '#475569');
+      root.style.setProperty('--canvas-pill-bg', '#FFFFFF');
+      root.style.setProperty('--canvas-pill-border', '#CBD5E1');
+      root.style.setProperty('--canvas-pill-text', '#16A34A');
+      root.style.setProperty('--canvas-btn-bg', '#FFFFFF');
+      root.style.setProperty('--canvas-btn-border', '#CBD5E1');
+      root.style.setProperty('--canvas-btn-color', '#0F172A');
+    }
+    
+    if (document.body) {
+      document.body.style.backgroundColor = background;
+    }
+  }, [themeSettings, currentUser]);
 
   const resetToCleanData = () => {
     try {
@@ -551,22 +685,66 @@ export const AppProvider = ({ children }) => {
     } catch (e) { console.error(e); }
   }, [currentUser]);
 
-  const addNewWorker = (username, password) => {
-    if (username && password && !workers.find(w => w.username === username)) {
-      setWorkers([...workers, { username, password }]);
+  const addNewWorker = (usernameOrData, password, email, phone, zone) => {
+    let newWorker = {};
+    if (typeof usernameOrData === 'object' && usernameOrData !== null) {
+      newWorker = { ...usernameOrData };
+    } else {
+      newWorker = {
+        username: usernameOrData,
+        password,
+        email: email || '',
+        phone: phone || '',
+        zone: zone || 'Central Zone, Chennai'
+      };
+    }
+
+    if (newWorker.username && newWorker.password) {
+      let cleanUsername = newWorker.username.trim();
+      let cleanEmail = (newWorker.email || '').trim();
+
+      // If username was provided as an email address (e.g. thirsha@gmail.com), separate clean name & email
+      if (cleanUsername.includes('@')) {
+        if (!cleanEmail) {
+          cleanEmail = cleanUsername;
+        }
+        cleanUsername = cleanUsername.split('@')[0];
+      }
+
+      newWorker.username = cleanUsername;
+      newWorker.email = cleanEmail || `${cleanUsername.toLowerCase()}@gmail.com`;
+
+      setWorkers(prev => {
+        const filtered = prev.filter(w => {
+          const wUser = (w.username || '').toLowerCase();
+          const wEmail = (w.email || '').toLowerCase();
+          return wUser !== cleanUsername.toLowerCase() && wUser !== cleanEmail.toLowerCase() && (!cleanEmail || wEmail !== cleanEmail.toLowerCase());
+        });
+        return [...filtered, newWorker];
+      });
+      addNotification('WORKER_CREATED', cleanUsername, `New field worker "${cleanUsername}" registered successfully.`, 'Admin');
     }
   };
   
-  const login = (username, password) => {
-    if (username === 'admin' && password === 'admin') {
+  const login = (identifier, password) => {
+    if (!identifier || !password) return false;
+    const cleanId = identifier.trim().toLowerCase();
+
+    if (cleanId === 'admin' && password === 'admin') {
       setCurrentUser('Admin');
       return true;
     }
     
-    const worker = workers.find(w => w.username === username && w.password === password);
+    const worker = workers.find(w => {
+      const matchUser = w.username && w.username.toLowerCase() === cleanId;
+      const matchEmail = w.email && w.email.toLowerCase() === cleanId;
+      return (matchUser || matchEmail) && w.password === password;
+    });
+
     if (worker) {
-      setCurrentUser(worker.username);
-      setWorkerLogs(logs => [...logs, { user: worker.username, action: 'Login', timestamp: new Date().toISOString() }]);
+      const displayName = worker.username || worker.name;
+      setCurrentUser(displayName);
+      setWorkerLogs(logs => [...logs, { user: displayName, action: 'Login', timestamp: new Date().toISOString() }]);
       return true;
     }
     return false;
@@ -869,8 +1047,9 @@ export const AppProvider = ({ children }) => {
   };
 
   const addNotification = (type, targetId, message, role) => {
+    const uniqueId = `notif-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
     setNotifications(prev => [{
-      id: `notif-${Date.now()}`,
+      id: uniqueId,
       type,
       targetId,
       message,
@@ -1120,6 +1299,7 @@ export const AppProvider = ({ children }) => {
       markAllAsRead,
       addNotification,
       attendanceRecords,
+      setAttendanceRecords,
       checkInWorker,
       checkOutWorker,
       dailyReports,
@@ -1133,6 +1313,15 @@ export const AppProvider = ({ children }) => {
       removeToast,
       triggerRandomLiveEvent,
       lastUpdatedAppId,
+      themeSettings,
+      updateThemeSettings,
+      resetThemeSettings,
+      isSidebarOpen,
+      setIsSidebarOpen,
+      isMobileSidebarOpen,
+      setIsMobileSidebarOpen,
+      toggleSidebar,
+      closeMobileSidebar,
       resetToCleanData
     }}>
       {children}
