@@ -185,12 +185,15 @@ export default function Navbar() {
                         <div style={{ marginTop: '0.25rem' }}>
                           {n.read ? <span style={{ color: 'var(--text-muted)' }}>○</span> : <span style={{ color: 'var(--primary)' }}>●</span>}
                         </div>
-                        <div>
-                          <div style={{ fontSize: '0.875rem', fontWeight: n.read ? 500 : 600, color: 'var(--text-main)', marginBottom: '0.25rem' }}>
-                            {n.type.replace(/_/g, ' ')}
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ fontSize: '0.825rem', fontWeight: n.read ? 500 : 700, color: 'var(--text-main)', marginBottom: '0.25rem', lineHeight: 1.4 }}>
+                            {n.message || n.type.replace(/_/g, ' ')}
                           </div>
-                          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '240px' }}>
-                            {n.targetId}
+                          <div style={{ fontSize: '0.725rem', color: 'var(--text-muted)', display: 'flex', gap: '0.4rem', alignItems: 'center', flexWrap: 'wrap' }}>
+                            <span style={{ fontWeight: 800, color: 'var(--primary)' }}>{n.targetId}</span>
+                            {n.applicantName && (
+                              <span style={{ color: '#1d4ed8', fontWeight: 600 }}>• 👤 {n.applicantName}</span>
+                            )}
                           </div>
                         </div>
                       </div>

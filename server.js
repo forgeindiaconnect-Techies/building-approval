@@ -311,16 +311,17 @@ async function sendBrevoSmtpEmail({ toEmail, toName, subject, htmlContent }) {
   });
 }
 
-// 2. Brevo REST API Client (Used when BREVO_API_KEY is configured)
+// 2. Brevo REST API Client (Used via HTTPS api.brevo.com port 443)
 async function sendBrevoRestEmail({ toEmail, toName, subject, htmlContent }) {
   const config = getBrevoConfig();
-  if (!config.apiKey) throw new Error('BREVO_API_KEY is not configured in .env (starts with xkeysib-...)');
+  const key = config.apiKey || config.smtpKey;
+  if (!key) throw new Error('Brevo API/SMTP Key is missing in .env');
 
   console.log(`📡 [Brevo REST API] Sending email via HTTPS api.brevo.com to ${toEmail}...`);
 
   return new Promise((resolve, reject) => {
     const payload = JSON.stringify({
-      sender: { name: config.senderName, email: config.senderEmail },
+      sender: { name: config.senderName || 'Tamil Nadu Building Approval Portal', email: config.senderEmail || 'forgeindiaconnectfic@gmail.com' },
       to: [{ email: toEmail, name: toName || toEmail }],
       subject: subject || 'Building Approval Status Notification',
       htmlContent: htmlContent || '<p>Notification from Building Approval System</p>'
@@ -331,7 +332,7 @@ async function sendBrevoRestEmail({ toEmail, toName, subject, htmlContent }) {
       path: '/v3/smtp/email',
       method: 'POST',
       headers: {
-        'api-key': config.apiKey,
+        'api-key': key,
         'Content-Type': 'application/json',
         'Content-Length': Buffer.byteLength(payload)
       },
@@ -346,7 +347,7 @@ async function sendBrevoRestEmail({ toEmail, toName, subject, htmlContent }) {
           const parsed = JSON.parse(data);
           if (res.statusCode >= 200 && res.statusCode < 300) {
             console.log(`✅ [Brevo REST API] Dispatched successfully:`, parsed);
-            resolve({ success: true, mode: 'REST API', ...parsed });
+            resolve({ success: true, mode: 'REST API (HTTPS)', ...parsed });
           } else {
             console.error(`❌ [Brevo REST API Error HTTP ${res.statusCode}]:`, parsed.message || data);
             reject(new Error(parsed.message || data || `Brevo REST error ${res.statusCode}`));
@@ -370,33 +371,33 @@ async function sendBrevoRestEmail({ toEmail, toName, subject, htmlContent }) {
   });
 }
 
-// 3. Unified Brevo Dispatcher (Auto-selects REST API or SMTP Key)
+// 3. Unified Brevo Dispatcher (Auto-selects REST API over HTTPS, with SMTP Relay fallback)
 async function sendBrevoEmail({ toEmail, toName, subject, htmlContent }) {
   const config = getBrevoConfig();
+  const key = config.apiKey || config.smtpKey;
 
-  // Try REST API first if configured
-  if (config.apiKey && config.apiKey.startsWith('xkeysib-')) {
+  if (!key) {
+    throw new Error('Neither BREVO_API_KEY nor BREVO_SMTP_KEY is configured in .env');
+  }
+
+  // Primary: Send via Brevo HTTPS REST API (Port 443 - never blocked by cloud hosts or firewalls)
+  try {
+    return await sendBrevoRestEmail({ toEmail, toName, subject, htmlContent });
+  } catch (restErr) {
+    console.warn('⚠️ Brevo REST API attempt note:', restErr.message, 'Trying SMTP Relay (port 587)...');
+  }
+
+  // Secondary Fallback: SMTP STARTTLS Socket Relay
+  if (config.smtpKey) {
     try {
-      return await sendBrevoRestEmail({ toEmail, toName, subject, htmlContent });
-    } catch (err) {
-      if (config.smtpKey) {
-        console.warn('⚠️ Brevo REST API failed, falling back to Brevo SMTP Relay:', err.message);
-        return await sendBrevoSmtpEmail({ toEmail, toName, subject, htmlContent });
-      }
-      throw err;
+      return await sendBrevoSmtpEmail({ toEmail, toName, subject, htmlContent });
+    } catch (smtpErr) {
+      console.error('❌ Brevo SMTP Relay error:', smtpErr.message);
+      throw smtpErr;
     }
   }
 
-  // Use SMTP Key if configured
-  if (config.smtpKey) {
-    return await sendBrevoSmtpEmail({ toEmail, toName, subject, htmlContent });
-  }
-
-  if (config.apiKey) {
-    return await sendBrevoRestEmail({ toEmail, toName, subject, htmlContent });
-  }
-
-  throw new Error('Neither BREVO_API_KEY nor BREVO_SMTP_KEY is configured in .env');
+  throw new Error('Failed to dispatch email via Brevo');
 }
 
 // 4. Connection Checker for Brevo (SMTP and/or REST API)
@@ -499,15 +500,24 @@ async function checkBrevoConnection() {
 }
 
 // 5. Official HTML Email Template for Real-Time Customer Registration
-function generateRegistrationEmailHtml({ applicantName, applicationId, location, buildingType, uploadUrl, trackingUrl, workerName }) {
+function generateRegistrationEmailHtml({ applicantName, applicationId, location, buildingType, uploadUrl, trackingUrl, workerName, email }) {
   const year = new Date().getFullYear();
-  const safeName = applicantName || 'Citizen';
+  const safeName = applicantName || 'Valued Citizen';
   const safeId = applicationId || 'BA-2026-PENDING';
   const safeLocation = location || 'Tamil Nadu District';
-  const safeType = buildingType || 'Residential';
-  const safeWorker = workerName || 'Authorized Field Worker';
-  const safeUploadUrl = uploadUrl || `http://localhost:5173/customer-upload/${safeId}`;
-  const safeTrackingUrl = trackingUrl || `http://localhost:5173/track`;
+  const safeType = buildingType || 'Residential Building';
+  const safeWorker = workerName || 'Single Window Online Portal';
+  const safeEmail = email || '';
+  const nowFormatted = new Date().toLocaleDateString('en-US', { 
+    weekday: 'long', 
+    year: 'numeric', 
+    month: 'long', 
+    day: 'numeric' 
+  });
+  
+  const frontendBase = process.env.VITE_FRONTEND_URL || 'https://building-approval-two.vercel.app';
+  const safeUploadUrl = uploadUrl || `${frontendBase}/customer-upload/${safeId}`;
+  const safeTrackingUrl = trackingUrl || `${frontendBase}/track`;
 
   return `
 <!DOCTYPE html>
@@ -515,56 +525,66 @@ function generateRegistrationEmailHtml({ applicantName, applicationId, location,
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Building Approval Registration Confirmation</title>
+  <title>Application Acknowledgment & Tracking Details — BuildApp</title>
   <style>
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f1f5f9; margin: 0; padding: 24px 12px; color: #1e293b; }
-    .email-container { max-width: 620px; margin: 0 auto; background: #ffffff; border-radius: 14px; overflow: hidden; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08); border: 1px solid #e2e8f0; }
-    .header { background: linear-gradient(135deg, #003366 0%, #001f3f 100%); color: #ffffff; padding: 32px 24px; text-align: center; }
-    .gov-badge { display: inline-block; background: #FF9933; color: #ffffff; font-weight: 800; font-size: 11px; padding: 4px 12px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.75px; margin-bottom: 12px; }
-    .title { margin: 0; font-size: 22px; font-weight: 800; letter-spacing: -0.2px; color: #ffffff; }
-    .subtitle { margin: 6px 0 0 0; font-size: 13px; opacity: 0.9; color: #93c5fd; }
-    .content { padding: 28px 26px; }
-    .greeting { font-size: 17px; font-weight: 700; color: #0f172a; margin-top: 0; margin-bottom: 12px; }
-    .lead { font-size: 14.5px; line-height: 1.6; color: #475569; margin-bottom: 22px; }
-    .app-card { background: #f8fafc; border: 2px dashed #cbd5e1; border-radius: 12px; padding: 18px 20px; margin: 20px 0 24px; text-align: center; }
-    .app-card-label { font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
-    .app-id { font-size: 24px; font-weight: 900; color: #003366; letter-spacing: 1.5px; font-family: monospace; }
-    .details-table { width: 100%; border-collapse: collapse; margin-bottom: 24px; background: #ffffff; border-radius: 8px; border: 1px solid #e2e8f0; }
-    .details-table td { padding: 11px 16px; font-size: 13.5px; border-bottom: 1px solid #f1f5f9; }
+    body { font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; background-color: #f1f5f9; margin: 0; padding: 28px 12px; color: #1e293b; -webkit-font-smoothing: antialiased; }
+    .email-container { max-width: 640px; margin: 0 auto; background: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 15px 35px rgba(15, 42, 74, 0.08); border: 1px solid #e2e8f0; }
+    .header { background: linear-gradient(135deg, #0F2A4A 0%, #001f3f 60%, #1e3a8a 100%); color: #ffffff; padding: 36px 28px 30px; text-align: center; }
+    .company-badge { display: inline-block; background: linear-gradient(90deg, #FF9933 0%, #ff7700 100%); color: #ffffff; font-weight: 800; font-size: 11px; padding: 5px 14px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 12px; box-shadow: 0 2px 8px rgba(255, 153, 51, 0.35); }
+    .title { margin: 0; font-size: 24px; font-weight: 900; letter-spacing: -0.3px; color: #ffffff; line-height: 1.25; }
+    .subtitle { margin: 8px 0 0 0; font-size: 13.5px; opacity: 0.92; color: #93c5fd; font-weight: 500; }
+    .content { padding: 32px 28px; }
+    .greeting { font-size: 18px; font-weight: 800; color: #0f172a; margin-top: 0; margin-bottom: 10px; }
+    .lead { font-size: 14.5px; line-height: 1.65; color: #475569; margin-bottom: 24px; }
+    .app-highlight-card { background: linear-gradient(135deg, #f8fafc 0%, #eff6ff 100%); border: 2px solid #bfdbfe; border-radius: 14px; padding: 22px 24px; margin: 22px 0 28px; text-align: center; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.05); }
+    .app-card-label { font-size: 11px; font-weight: 800; color: #2563eb; text-transform: uppercase; letter-spacing: 1.2px; margin-bottom: 6px; }
+    .app-id { font-size: 26px; font-weight: 900; color: #0F2A4A; letter-spacing: 2px; font-family: 'Courier New', Courier, monospace; }
+    .app-status-tag { display: inline-block; background: #dcfce7; color: #15803d; border: 1px solid #86efac; font-size: 11.5px; font-weight: 800; padding: 3px 12px; border-radius: 999px; margin-top: 8px; }
+    .details-table { width: 100%; border-collapse: separate; border-spacing: 0; margin-bottom: 26px; background: #ffffff; border-radius: 10px; border: 1px solid #e2e8f0; overflow: hidden; }
+    .details-table td { padding: 12px 18px; font-size: 13.5px; border-bottom: 1px solid #f1f5f9; }
     .details-table tr:last-child td { border-bottom: none; }
-    .col-label { color: #64748b; font-weight: 600; width: 40%; }
+    .col-label { color: #64748b; font-weight: 600; width: 38%; background-color: #f8fafc; }
     .col-val { color: #0f172a; font-weight: 700; }
-    .btn-group { text-align: center; margin: 28px 0 24px; }
-    .btn-primary { display: inline-block; background: #003366; color: #ffffff !important; text-decoration: none; padding: 14px 32px; border-radius: 8px; font-weight: 700; font-size: 15px; margin-bottom: 10px; box-shadow: 0 4px 12px rgba(0, 51, 102, 0.25); }
-    .btn-secondary { display: block; width: fit-content; margin: 0 auto; color: #003366 !important; text-decoration: underline; font-weight: 600; font-size: 13px; }
-    .checklist-box { background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 10px; padding: 18px 20px; margin: 24px 0; }
-    .checklist-title { margin: 0 0 10px 0; color: #166534; font-size: 14px; font-weight: 700; }
-    .checklist-box ul { margin: 0; padding-left: 20px; color: #15803d; font-size: 13px; line-height: 1.65; }
-    .stages-box { background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 10px; padding: 16px 20px; margin: 20px 0; }
-    .stages-title { margin: 0 0 8px 0; color: #1e40af; font-size: 13.5px; font-weight: 700; }
-    .stages-box p { margin: 0; font-size: 12.5px; color: #1e3a8a; line-height: 1.5; }
-    .footer { background: #f8fafc; padding: 20px 24px; text-align: center; font-size: 12px; color: #94a3b8; border-top: 1px solid #e2e8f0; }
+    .btn-container { text-align: center; margin: 30px 0 28px; }
+    .btn-primary { display: inline-block; background: linear-gradient(135deg, #0F2A4A 0%, #1e3a8a 100%); color: #ffffff !important; text-decoration: none; padding: 14px 34px; border-radius: 10px; font-weight: 800; font-size: 14.5px; margin: 0 6px 12px 6px; box-shadow: 0 6px 16px rgba(15, 42, 74, 0.25); }
+    .btn-secondary { display: inline-block; background: #eff6ff; color: #2563eb !important; text-decoration: none; border: 1.5px solid #bfdbfe; padding: 13px 28px; border-radius: 10px; font-weight: 800; font-size: 14.5px; margin: 0 6px 12px 6px; }
+    .checklist-box { background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 12px; padding: 20px 22px; margin: 24px 0; }
+    .checklist-title { margin: 0 0 10px 0; color: #166534; font-size: 14.5px; font-weight: 800; display: flex; align-items: center; gap: 6px; }
+    .checklist-box ul { margin: 0; padding-left: 20px; color: #15803d; font-size: 13px; line-height: 1.7; font-weight: 500; }
+    .stages-box { background: #faf5ff; border: 1px solid #e9d5ff; border-radius: 12px; padding: 18px 22px; margin: 22px 0; }
+    .stages-title { margin: 0 0 10px 0; color: #6b21a8; font-size: 14px; font-weight: 800; }
+    .stages-list { font-size: 12.5px; color: #581c87; line-height: 1.6; }
+    .support-box { background: #f8fafc; border-radius: 12px; border: 1px solid #e2e8f0; padding: 18px 20px; margin-top: 24px; font-size: 13px; color: #475569; }
+    .footer { background: #0b1c30; padding: 26px 28px; text-align: center; font-size: 12px; color: #94a3b8; line-height: 1.6; }
+    .footer a { color: #60a5fa; text-decoration: none; }
   </style>
 </head>
 <body>
   <div class="email-container">
+    <!-- Official Header -->
     <div class="header">
-      <div class="gov-badge">🏛️ Single Window Clearance System</div>
-      <h1 class="title">Tamil Nadu Building Plan Approval</h1>
-      <p class="subtitle">Online Building Permit & Citizen Scrutiny Portal</p>
+      <div class="company-badge">🏛️ Single Window Clearance System • DTCP</div>
+      <h1 class="title">Tamil Nadu Building Approval Portal</h1>
+      <p class="subtitle">Directorate of Town and Country Planning & Municipal Administration</p>
     </div>
 
     <div class="content">
+      <!-- Greeting -->
       <h2 class="greeting">Dear ${safeName},</h2>
       <p class="lead">
-        Thank you for choosing the Single Window Portal. Your building approval application has been <strong>successfully registered</strong> in our real-time portal.
+        Warm greetings from <strong>BuildApp (ForgeIndiaConnect Techies)</strong>! We are pleased to inform you that your building plan clearance application has been <strong>successfully registered</strong> in our real-time single-window platform on <strong>${nowFormatted}</strong>.
       </p>
 
-      <div class="app-card">
-        <div class="app-card-label">Official Application ID</div>
+      <!-- Application Reference ID Card -->
+      <div class="app-highlight-card">
+        <div class="app-card-label">Official Application Reference Number</div>
         <div class="app-id">${safeId}</div>
+        <div>
+          <span class="app-status-tag">✓ Application Registered • Ready for Scrutiny</span>
+        </div>
       </div>
 
+      <!-- Application Details Table -->
       <table class="details-table">
         <tr>
           <td class="col-label">Applicant Name</td>
@@ -575,50 +595,78 @@ function generateRegistrationEmailHtml({ applicantName, applicationId, location,
           <td class="col-val">${safeType}</td>
         </tr>
         <tr>
-          <td class="col-label">Site / Location</td>
+          <td class="col-label">Site / District</td>
           <td class="col-val">${safeLocation}</td>
         </tr>
+        ${safeEmail ? `
         <tr>
-          <td class="col-label">Registered By</td>
+          <td class="col-label">Registered Email</td>
+          <td class="col-val">${safeEmail}</td>
+        </tr>` : ''}
+        <tr>
+          <td class="col-label">Processing Channel</td>
           <td class="col-val">${safeWorker}</td>
         </tr>
         <tr>
-          <td class="col-label">Status</td>
-          <td class="col-val" style="color: #d97706;">⚡ Pending Document Uploads</td>
+          <td class="col-label">Current Stage</td>
+          <td class="col-val" style="color: #2563eb;">Stage 1: Registration Completed ➜ Stage 2: Scrutiny</td>
         </tr>
       </table>
 
-      <div class="btn-group">
-        <a href="${safeUploadUrl}" class="btn-primary">📤 Upload Your Documents Now</a>
-        <a href="${safeTrackingUrl}" class="btn-secondary">🔍 Track Application Real-Time</a>
+      <!-- Action Buttons -->
+      <div class="btn-container">
+        <a href="${safeTrackingUrl}" class="btn-primary" target="_blank">🔍 Track Live Application Status</a>
+        <a href="${safeUploadUrl}" class="btn-secondary" target="_blank">📤 Upload / Manage Documents</a>
       </div>
 
+      <!-- Required Documents Checklist -->
       <div class="checklist-box">
-        <h4 class="checklist-title">📋 Checklist of Documents to Upload:</h4>
+        <h4 class="checklist-title">📋 Required Documentation Checklist:</h4>
         <ul>
-          <li>Registered Land Sale Deed / Title Documents</li>
-          <li>Patta / Chitta & Combined FMB Sketch</li>
-          <li>Encumbrance Certificate (EC for last 15-30 years)</li>
-          <li>Proposed Building & Site Plan (by Registered Architect / Engineer)</li>
-          <li>Applicant ID Proof (Aadhaar / Passport / Voter ID)</li>
-          <li>Latest Property / Vacant Land Tax Receipt</li>
+          <li><strong>Registered Land Sale Deed:</strong> Clear copy of title ownership deed.</li>
+          <li><strong>Patta / Chitta & Combined FMB Sketch:</strong> Revenue record proof.</li>
+          <li><strong>Encumbrance Certificate (EC):</strong> Minimum 15 to 30 years non-encumbrance proof.</li>
+          <li><strong>Proposed Building & Site Plan:</strong> Prepared and sealed by Registered Architect/Engineer.</li>
+          <li><strong>Applicant Identity Proof:</strong> Aadhaar Card / Passport / Voter ID.</li>
+          <li><strong>Property Tax Receipt:</strong> Latest paid vacant land / property tax receipt.</li>
         </ul>
       </div>
 
+      <!-- 5-Stage Approval Workflow -->
       <div class="stages-box">
-        <div class="stages-title">🔄 5-Stage Approval Workflow:</div>
-        <p>1. Registration ➜ 2. Document Scrutiny ➜ 3. Site Inspection ➜ 4. Scrutiny Fee ➜ 5. Final Permit Sanction & QR Certificate</p>
+        <div class="stages-title">🔄 5-Stage Clearance & Approval Journey:</div>
+        <div class="stages-list">
+          <strong>1. Registration (Completed ✓)</strong> ➜ 
+          <strong>2. Document Scrutiny & Plan Verification</strong> ➜ 
+          <strong>3. Field Site Inspection & GPS Verification</strong> ➜ 
+          <strong>4. Scrutiny Fee Assessment & Online Payment</strong> ➜ 
+          <strong>5. Final Sanction Order & Digital QR Permit</strong>
+        </div>
+      </div>
+
+      <!-- Support & Helpdesk -->
+      <div class="support-box">
+        <p style="margin: 0 0 6px 0; font-weight: 700; color: #0F2A4A;">📞 Need Help or Have Inquiries?</p>
+        <p style="margin: 0 0 4px 0;">Our Single Window Support Desk is available Monday through Saturday (9:30 AM to 6:00 PM).</p>
+        <p style="margin: 0;">
+          <strong>Email:</strong> <a href="mailto:forgeindiaconnectfic@gmail.com" style="color: #2563eb;">forgeindiaconnectfic@gmail.com</a> | 
+          <strong>Toll-Free:</strong> 1800-425-DTCP (+91 44 2852 1115)
+        </p>
       </div>
 
       <p style="font-size: 13px; color: #64748b; margin-top: 24px; line-height: 1.5;">
-        Need assistance? Contact your field officer or reply directly to this notification. Please keep your Application ID <strong>${safeId}</strong> ready for all future communications.
+        Please quote your Application Reference ID <strong>${safeId}</strong> in all future communications.
       </p>
     </div>
 
+    <!-- Official Footer -->
     <div class="footer">
-      <p style="margin: 0 0 6px 0; font-weight: 600; color: #64748b;">📧 Real-Time Delivery via Brevo Mailer Service</p>
-      <p style="margin: 0 0 6px 0;">BuildPermit — Directorate of Town and Country Planning (DTCP)</p>
-      <p style="margin: 0;">© ${year} Government of Tamil Nadu. All rights reserved.</p>
+      <p style="margin: 0 0 6px 0; font-weight: 700; color: #e2e8f0;">🏛️ Directorate of Town and Country Planning (DTCP)</p>
+      <p style="margin: 0 0 6px 0; color: #94a3b8;">Department of Housing and Urban Development • Government of Tamil Nadu</p>
+      <p style="margin: 0 0 10px 0; color: #94a3b8;">Platform engineered by <strong style="color: #ffffff;">ForgeIndiaConnect Techies</strong></p>
+      <p style="margin: 0; font-size: 11px; color: #64748b;">
+        This is an automated notification from the Single Window Clearance Portal. Please do not reply directly if no longer needed.
+      </p>
     </div>
   </div>
 </body>
@@ -885,7 +933,7 @@ const server = http.createServer(async (req, res) => {
 
         const safeId = applicationId || `BA-2026-${Date.now().toString().slice(-5)}`;
         const safeName = applicantName || 'Valued Citizen';
-        const clientOrigin = req.headers.origin || 'http://localhost:5173';
+        const clientOrigin = req.headers.origin || process.env.VITE_FRONTEND_URL || 'https://building-approval-two.vercel.app';
         const finalUploadUrl = uploadUrl || `${clientOrigin}/customer-upload/${safeId}`;
         const finalTrackingUrl = trackingUrl || `${clientOrigin}/track`;
 
@@ -896,7 +944,8 @@ const server = http.createServer(async (req, res) => {
           buildingType,
           workerName,
           uploadUrl: finalUploadUrl,
-          trackingUrl: finalTrackingUrl
+          trackingUrl: finalTrackingUrl,
+          email: targetEmail
         });
 
         console.log(`📧 [Brevo] Dispatching real-time registration email to: ${targetEmail} (App: ${safeId})...`);
@@ -904,7 +953,7 @@ const server = http.createServer(async (req, res) => {
         const response = await sendBrevoEmail({
           toEmail: targetEmail,
           toName: safeName,
-          subject: `🏛️ Building Plan Application Registered: ${safeId} — Upload Documents`,
+          subject: `🏛️ Application Acknowledgment: ${safeId} — BuildApp (DTCP Single Window Portal)`,
           htmlContent: html
         });
 

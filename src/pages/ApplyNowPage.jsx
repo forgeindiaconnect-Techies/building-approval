@@ -151,7 +151,7 @@ export default function ApplyNowPage() {
     
     // Step 32: Admin Notification
     if (pushLiveToast) {
-      pushLiveToast('New Application Submitted', `Application ${newId} submitted by ${formData.fullName}`, 'application');
+      pushLiveToast('Customer Registered', `Customer ${formData.fullName} registered new building approval application (${newId})`, 'application');
     }
 
     setSubmittedAppId(newId);
@@ -248,24 +248,25 @@ export default function ApplyNowPage() {
       
       {/* Top Government Navigation Header */}
       <div style={{ position: 'sticky', top: 0, zIndex: 1000, width: '100%', boxShadow: '0 4px 15px rgba(0,0,0,0.1)' }}>
-        <header style={{ backgroundColor: '#ffffff', borderBottom: '1px solid #cbd5e1', padding: '0.85rem 2.5rem' }}>
-          <div style={{ maxWidth: '1280px', margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', cursor: 'pointer' }} onClick={() => navigate('/')}>
-              <div style={{ backgroundColor: '#003366', color: 'white', padding: '0.65rem 0.75rem', borderRadius: '12px' }}>
-                <Building2 size={26} />
+        <header className="apply-nav-header">
+          <div className="apply-nav-container">
+            <div className="apply-nav-brand" onClick={() => navigate('/')}>
+              <div style={{ backgroundColor: '#003366', color: 'white', padding: '0.6rem 0.7rem', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Building2 size={24} />
               </div>
               <div>
-                <div style={{ fontSize: '1.25rem', fontWeight: 800, color: '#003366' }}>
-                  ApprovalTrack <span style={{ fontSize: '0.75rem', backgroundColor: '#e6f0fa', color: '#003366', padding: '0.2rem 0.55rem', borderRadius: '6px' }}>PUBLIC APPLICATION</span>
+                <div style={{ fontSize: '1.2rem', fontWeight: 800, color: '#003366', display: 'flex', alignItems: 'center', gap: '0.4rem', flexWrap: 'wrap' }}>
+                  ApprovalTrack <span style={{ fontSize: '0.72rem', backgroundColor: '#e6f0fa', color: '#003366', padding: '0.15rem 0.45rem', borderRadius: '6px' }}>PUBLIC APPLICATION</span>
                 </div>
-                <div style={{ fontSize: '0.78rem', color: '#64748b', fontWeight: 600 }}>
+                <div style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: 600 }}>
                   Online Building Permit Clearance Portal
                 </div>
               </div>
             </div>
 
-            <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+            <div className="apply-nav-actions">
               <button
+                className="apply-test-btn"
                 onClick={async () => {
                   const testEmail = prompt('Enter recipient email address to test real-time Brevo delivery:', formData.email || 'pooja.antigraviity@gmail.com');
                   if (!testEmail || !testEmail.includes('@')) {
@@ -297,9 +298,9 @@ export default function ApplyNowPage() {
                   backgroundColor: '#eff6ff',
                   color: '#1d4ed8',
                   border: '1px solid #bfdbfe',
-                  padding: '0.55rem 1rem',
+                  padding: '0.55rem 0.95rem',
                   borderRadius: '8px',
-                  fontSize: '0.85rem',
+                  fontSize: '0.825rem',
                   fontWeight: 700,
                   cursor: 'pointer',
                   display: 'flex',
@@ -312,13 +313,13 @@ export default function ApplyNowPage() {
 
               <button 
                 onClick={() => navigate('/')} 
-                style={{ backgroundColor: '#ffffff', border: '1px solid #cbd5e1', color: '#003366', padding: '0.55rem 1.15rem', borderRadius: '8px', fontSize: '0.85rem', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.4rem' }}
+                style={{ backgroundColor: '#ffffff', border: '1px solid #cbd5e1', color: '#003366', padding: '0.55rem 1.1rem', borderRadius: '8px', fontSize: '0.825rem', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.4rem' }}
               >
-                <ArrowLeft size={16} /> Back to Home
+                <ArrowLeft size={15} /> Back to Home
               </button>
               <button 
                 onClick={() => navigate('/track')} 
-                style={{ backgroundColor: '#003366', color: 'white', border: 'none', padding: '0.55rem 1.25rem', borderRadius: '8px', fontSize: '0.85rem', fontWeight: 700, cursor: 'pointer' }}
+                style={{ backgroundColor: '#003366', color: 'white', border: 'none', padding: '0.55rem 1.15rem', borderRadius: '8px', fontSize: '0.825rem', fontWeight: 700, cursor: 'pointer' }}
               >
                 Track Application
               </button>
@@ -328,33 +329,33 @@ export default function ApplyNowPage() {
       </div>
 
       {/* Main Page Wrapper */}
-      <div style={{ maxWidth: '1050px', margin: '2.5rem auto', padding: '0 1.5rem' }}>
+      <div className="apply-page-wrapper">
         
         {/* Step 26 — Success Page View */}
         {submittedAppId ? (
-          <div style={{ backgroundColor: '#ffffff', borderRadius: '20px', boxShadow: '0 15px 35px rgba(0,51,102,0.12)', border: '1px solid #cbd5e1', borderTop: '6px solid #10b981', padding: '3.5rem 2.5rem', textAlign: 'center' }}>
-            <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 84, height: 84, backgroundColor: '#d1fae5', color: '#059669', borderRadius: '50%', marginBottom: '1.5rem' }}>
-              <CheckCircle2 size={54} />
+          <div className="apply-section-card" style={{ borderTop: '6px solid #10b981', textAlign: 'center', padding: '3rem 2rem' }}>
+            <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 76, height: 76, backgroundColor: '#d1fae5', color: '#059669', borderRadius: '50%', marginBottom: '1.25rem' }}>
+              <CheckCircle2 size={48} />
             </div>
 
-            <h1 style={{ fontSize: '2.2rem', fontWeight: 800, color: '#065f46', marginBottom: '0.5rem' }}>
+            <h1 style={{ fontSize: 'clamp(1.5rem, 4vw, 2.2rem)', fontWeight: 800, color: '#065f46', marginBottom: '0.5rem' }}>
               Application Submitted Successfully
             </h1>
-            <p style={{ fontSize: '1.05rem', color: '#475569', maxWidth: '600px', margin: '0 auto 2rem auto', lineHeight: 1.6 }}>
+            <p style={{ fontSize: '1rem', color: '#475569', maxWidth: '600px', margin: '0 auto 1.75rem auto', lineHeight: 1.6 }}>
               Your application has been received.
             </p>
 
             {/* Application ID Box */}
-            <div style={{ backgroundColor: '#f0fdf4', border: '2px dashed #10b981', borderRadius: '16px', padding: '1.75rem 2rem', maxWidth: '480px', margin: '0 auto 2rem auto' }}>
-              <div style={{ fontSize: '0.85rem', fontWeight: 800, color: '#047857', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.5rem' }}>
+            <div style={{ backgroundColor: '#f0fdf4', border: '2px dashed #10b981', borderRadius: '16px', padding: '1.5rem 1.75rem', maxWidth: '480px', margin: '0 auto 1.75rem auto' }}>
+              <div style={{ fontSize: '0.85rem', fontWeight: 800, color: '#047857', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.4rem' }}>
                 Application ID
               </div>
-              <div style={{ fontSize: '2.5rem', fontWeight: 900, color: '#065f46', letterSpacing: '0.05em', margin: '0.25rem 0' }}>
+              <div style={{ fontSize: 'clamp(1.8rem, 5vw, 2.5rem)', fontWeight: 900, color: '#065f46', letterSpacing: '0.05em', margin: '0.25rem 0' }}>
                 {submittedAppId}
               </div>
               <button 
                 onClick={copyAppId}
-                style={{ marginTop: '0.85rem', backgroundColor: '#059669', color: 'white', border: 'none', padding: '0.55rem 1.25rem', borderRadius: '8px', fontSize: '0.85rem', fontWeight: 700, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}
+                style={{ marginTop: '0.75rem', backgroundColor: '#059669', color: 'white', border: 'none', padding: '0.55rem 1.25rem', borderRadius: '8px', fontSize: '0.85rem', fontWeight: 700, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}
               >
                 {copied ? <Check size={16} /> : <Copy size={16} />}
                 {copied ? 'Copied to Clipboard!' : 'Copy Application ID'}
@@ -427,24 +428,24 @@ export default function ApplyNowPage() {
             )}
 
             {/* Notice */}
-            <div style={{ backgroundColor: '#fffbebfb', border: '1px solid #fde68a', borderLeft: '4px solid #f59e0b', borderRadius: '10px', padding: '1.15rem 1.35rem', maxWidth: '580px', margin: '0 auto 2.5rem auto', textAlign: 'left', display: 'flex', gap: '0.75rem', alignItems: 'flex-start' }}>
-              <AlertCircle size={24} color="#d97706" style={{ flexShrink: 0, marginTop: '2px' }} />
-              <div style={{ fontSize: '0.9rem', color: '#92400e', lineHeight: 1.5, fontWeight: 600 }}>
+            <div style={{ backgroundColor: '#fffbebfb', border: '1px solid #fde68a', borderLeft: '4px solid #f59e0b', borderRadius: '10px', padding: '1.15rem 1.35rem', maxWidth: '580px', margin: '0 auto 2rem auto', textAlign: 'left', display: 'flex', gap: '0.75rem', alignItems: 'flex-start' }}>
+              <AlertCircle size={22} color="#d97706" style={{ flexShrink: 0, marginTop: '2px' }} />
+              <div style={{ fontSize: '0.875rem', color: '#92400e', lineHeight: 1.5, fontWeight: 600 }}>
                 Please save this Application ID to track your application status.
               </div>
             </div>
 
             {/* Action Buttons */}
-            <div style={{ display: 'flex', justifyContent: 'center', gap: '1.25rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', flexWrap: 'wrap' }}>
               <button 
                 onClick={() => navigate(`/track-status?id=${submittedAppId}`)}
-                style={{ backgroundColor: '#003366', color: 'white', border: 'none', padding: '0.85rem 2rem', borderRadius: '10px', fontSize: '1rem', fontWeight: 800, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem', boxShadow: '0 4px 15px rgba(0,51,102,0.3)' }}
+                style={{ backgroundColor: '#003366', color: 'white', border: 'none', padding: '0.85rem 1.75rem', borderRadius: '10px', fontSize: '0.95rem', fontWeight: 800, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem', boxShadow: '0 4px 15px rgba(0,51,102,0.3)' }}
               >
                 Track Application <ArrowRight size={18} />
               </button>
               <button 
                 onClick={() => navigate('/')}
-                style={{ backgroundColor: '#ffffff', border: '2px solid #003366', color: '#003366', padding: '0.85rem 1.75rem', borderRadius: '10px', fontSize: '1rem', fontWeight: 800, cursor: 'pointer' }}
+                style={{ backgroundColor: '#ffffff', border: '2px solid #003366', color: '#003366', padding: '0.85rem 1.75rem', borderRadius: '10px', fontSize: '0.95rem', fontWeight: 800, cursor: 'pointer' }}
               >
                 Back to Home
               </button>
@@ -456,30 +457,30 @@ export default function ApplyNowPage() {
           <div>
             
             {/* 29.1 Page Header Banner & 4-Step Progress Bar */}
-            <div style={{ backgroundColor: '#ffffff', borderRadius: '16px', boxShadow: '0 4px 20px rgba(0,0,0,0.05)', border: '1px solid #cbd5e1', padding: '2rem 2.5rem', marginBottom: '2rem' }}>
-              <h1 style={{ fontSize: '2rem', fontWeight: 800, color: '#003366', margin: '0 0 0.4rem 0' }}>
+            <div className="apply-section-card">
+              <h1 style={{ fontSize: 'clamp(1.4rem, 4vw, 2rem)', fontWeight: 800, color: '#003366', margin: '0 0 0.4rem 0' }}>
                 Building Approval Application
               </h1>
-              <p style={{ fontSize: '0.95rem', color: '#64748b', margin: '0 0 1.75rem 0', fontWeight: 500 }}>
+              <p style={{ fontSize: 'clamp(0.85rem, 2.5vw, 0.95rem)', color: '#64748b', margin: '0 0 1.5rem 0', fontWeight: 500 }}>
                 Submit your building approval application by providing the required information and documents.
               </p>
 
               {/* 29.1 4-Step Progress Indicator */}
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1rem', borderTop: '1px solid #e2e8f0', paddingTop: '1.25rem' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', color: '#003366', fontWeight: 800, fontSize: '0.875rem' }}>
-                  <span style={{ backgroundColor: '#003366', color: 'white', width: 28, height: 28, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.85rem' }}>1</span>
+              <div className="apply-steps-grid">
+                <div className="apply-step-item" style={{ color: '#003366' }}>
+                  <span style={{ backgroundColor: '#003366', color: 'white', width: 26, height: 26, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.8rem', flexShrink: 0 }}>1</span>
                   <span>Applicant Details</span>
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', color: '#003366', fontWeight: 800, fontSize: '0.875rem' }}>
-                  <span style={{ backgroundColor: '#003366', color: 'white', width: 28, height: 28, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.85rem' }}>2</span>
+                <div className="apply-step-item" style={{ color: '#003366' }}>
+                  <span style={{ backgroundColor: '#003366', color: 'white', width: 26, height: 26, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.8rem', flexShrink: 0 }}>2</span>
                   <span>Building Details</span>
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', color: isAllMandatoryUploaded ? '#10b981' : '#003366', fontWeight: 800, fontSize: '0.875rem' }}>
-                  <span style={{ backgroundColor: isAllMandatoryUploaded ? '#10b981' : '#003366', color: 'white', width: 28, height: 28, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.85rem' }}>3</span>
+                <div className="apply-step-item" style={{ color: isAllMandatoryUploaded ? '#10b981' : '#003366' }}>
+                  <span style={{ backgroundColor: isAllMandatoryUploaded ? '#10b981' : '#003366', color: 'white', width: 26, height: 26, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.8rem', flexShrink: 0 }}>3</span>
                   <span>Documents</span>
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', color: isAllMandatoryUploaded ? '#003366' : '#94a3b8', fontWeight: 800, fontSize: '0.875rem' }}>
-                  <span style={{ backgroundColor: isAllMandatoryUploaded ? '#003366' : '#cbd5e1', color: 'white', width: 28, height: 28, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.85rem' }}>4</span>
+                <div className="apply-step-item" style={{ color: isAllMandatoryUploaded ? '#003366' : '#94a3b8' }}>
+                  <span style={{ backgroundColor: isAllMandatoryUploaded ? '#003366' : '#cbd5e1', color: 'white', width: 26, height: 26, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.8rem', flexShrink: 0 }}>4</span>
                   <span>Submit</span>
                 </div>
               </div>
@@ -487,20 +488,20 @@ export default function ApplyNowPage() {
 
             {/* Validation Banner if documents missing */}
             {errors.documents && (
-              <div style={{ backgroundColor: '#fef2f2', border: '1px solid #fca5a5', borderLeft: '5px solid #dc2626', color: '#991b1b', padding: '1rem 1.25rem', borderRadius: '12px', marginBottom: '2rem', fontSize: '0.875rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <AlertTriangle size={20} color="#dc2626" /> {errors.documents}
+              <div style={{ backgroundColor: '#fef2f2', border: '1px solid #fca5a5', borderLeft: '5px solid #dc2626', color: '#991b1b', padding: '1rem 1.25rem', borderRadius: '12px', marginBottom: '1.5rem', fontSize: '0.875rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <AlertTriangle size={20} color="#dc2626" style={{ flexShrink: 0 }} /> <span>{errors.documents}</span>
               </div>
             )}
 
             <form onSubmit={handleInitiateSubmit} noValidate>
               
               {/* 29.2 Section 1 — Applicant Details Card */}
-              <div style={{ backgroundColor: '#ffffff', borderRadius: '16px', boxShadow: '0 4px 20px rgba(0,0,0,0.05)', border: '1px solid #cbd5e1', padding: '2.25rem', marginBottom: '2rem' }}>
-                <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#003366', borderBottom: '2px solid #e2e8f0', paddingBottom: '0.75rem', marginBottom: '1.75rem' }}>
+              <div className="apply-section-card">
+                <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#003366', borderBottom: '2px solid #e2e8f0', paddingBottom: '0.75rem', marginBottom: '1.5rem' }}>
                   1. Applicant Details
                 </h2>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.35rem' }}>
+                <div className="apply-form-grid">
                   <div>
                     <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 700, color: '#1e293b', marginBottom: '0.4rem' }}>
                       Full Name *
@@ -615,7 +616,7 @@ export default function ApplyNowPage() {
 
                   <div>
                     <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 700, color: '#1e293b', marginBottom: '0.4rem' }}>
-                      Address * (Textarea)
+                      Address *
                     </label>
                     <textarea 
                       name="address"
@@ -631,12 +632,12 @@ export default function ApplyNowPage() {
               </div>
 
               {/* 29.3 Section 2 — Building Details Card */}
-              <div style={{ backgroundColor: '#ffffff', borderRadius: '16px', boxShadow: '0 4px 20px rgba(0,0,0,0.05)', border: '1px solid #cbd5e1', padding: '2.25rem', marginBottom: '2.5rem' }}>
-                <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#003366', borderBottom: '2px solid #e2e8f0', paddingBottom: '0.75rem', marginBottom: '1.75rem' }}>
+              <div className="apply-section-card">
+                <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#003366', borderBottom: '2px solid #e2e8f0', paddingBottom: '0.75rem', marginBottom: '1.5rem' }}>
                   2. Building Details
                 </h2>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.35rem' }}>
+                <div className="apply-form-grid">
                   <div>
                     <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 700, color: '#1e293b', marginBottom: '0.4rem' }}>
                       Building Type *
@@ -734,8 +735,8 @@ export default function ApplyNowPage() {
               </div>
 
               {/* 29.4 Section 3 — Required Documents Card & 29.5 Upload Lock */}
-              <div style={{ backgroundColor: '#ffffff', borderRadius: '16px', boxShadow: '0 4px 20px rgba(0,0,0,0.05)', border: '1px solid #cbd5e1', padding: '2.25rem', marginBottom: '2.5rem' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '2px solid #e2e8f0', paddingBottom: '0.75rem', marginBottom: '1.75rem' }}>
+              <div className="apply-section-card">
+                <div className="apply-doc-header-row">
                   <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#003366', margin: 0 }}>
                     3. Required Documents
                   </h2>
@@ -766,7 +767,7 @@ export default function ApplyNowPage() {
                 </div>
 
                 {/* Document Cards Grid */}
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem' }}>
+                <div className="apply-doc-grid">
                   {requiredDocList.map((doc) => {
                     const uploadInfo = uploadedDocs[doc.name];
                     const isUploaded = !!uploadInfo;
@@ -781,7 +782,7 @@ export default function ApplyNowPage() {
                           padding: '1.25rem',
                           display: 'flex',
                           flexDirection: 'column',
-                          justify: 'space-between',
+                          justifyContent: 'space-between',
                           gap: '1rem',
                           boxShadow: '0 2px 8px rgba(0,0,0,0.03)',
                           transition: 'all 0.2s ease'
@@ -789,7 +790,7 @@ export default function ApplyNowPage() {
                       >
                         <div>
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.35rem' }}>
-                            <span style={{ fontWeight: 800, fontSize: '1rem', color: '#0f172a' }}>
+                            <span style={{ fontWeight: 800, fontSize: '0.975rem', color: '#0f172a' }}>
                               {doc.name}
                             </span>
                             <span style={{
@@ -853,7 +854,7 @@ export default function ApplyNowPage() {
               </div>
 
               {/* 29.5 Submit Action Button & Upload Lock */}
-              <div style={{ backgroundColor: '#ffffff', borderRadius: '16px', border: '1px solid #cbd5e1', padding: '1.75rem 2.25rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div className="apply-submit-bar">
                 <div>
                   <div style={{ fontSize: '0.9rem', fontWeight: 800, color: '#0f172a' }}>
                     {uploadedMandatoryCount} / {totalMandatoryCount} Required Documents Uploaded
@@ -865,7 +866,7 @@ export default function ApplyNowPage() {
                   )}
                 </div>
 
-                <div style={{ display: 'flex', gap: '1rem' }}>
+                <div className="apply-submit-actions">
                   <button 
                     type="button"
                     onClick={() => navigate('/')}
@@ -880,7 +881,7 @@ export default function ApplyNowPage() {
                       backgroundColor: isAllMandatoryUploaded ? '#003366' : '#cbd5e1',
                       color: isAllMandatoryUploaded ? '#ffffff' : '#64748b',
                       border: 'none',
-                      padding: '0.9rem 2.75rem',
+                      padding: '0.9rem 2.5rem',
                       borderRadius: '10px',
                       fontSize: '1.05rem',
                       fontWeight: 800,
@@ -943,7 +944,7 @@ export default function ApplyNowPage() {
               </button>
             </div>
 
-            <div style={{ padding: '2rem' }}>
+            <div className="apply-modal-content" style={{ padding: '2rem' }}>
               <p style={{ fontSize: '0.95rem', color: '#334155', lineHeight: 1.6, margin: '0 0 1.5rem 0' }}>
                 Please verify that the information and documents you provided are correct. Once submitted, your application will be sent to the Building Approval Administration team for review.
               </p>

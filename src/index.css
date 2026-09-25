@@ -1144,5 +1144,215 @@ input:-webkit-autofill:active {
   }
 }
 
+/* ==========================================================================
+   PUBLIC CITIZEN APPLICATION PAGE (/apply) RESPONSIVE STYLES
+   ========================================================================== */
+
+.apply-nav-header {
+  background-color: #ffffff;
+  border-bottom: 1px solid #cbd5e1;
+  padding: 0.85rem 2rem;
+}
+
+.apply-nav-container {
+  max-width: 1280px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+
+.apply-nav-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  cursor: pointer;
+}
+
+.apply-nav-actions {
+  display: flex;
+  gap: 0.65rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.apply-page-wrapper {
+  max-width: 1050px;
+  margin: 2.25rem auto;
+  padding: 0 1.5rem;
+}
+
+.apply-section-card {
+  background-color: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  border: 1px solid #cbd5e1;
+  padding: 2.25rem;
+  margin-bottom: 2rem;
+}
+
+.apply-steps-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+  border-top: 1px solid #e2e8f0;
+  padding-top: 1.25rem;
+}
+
+.apply-step-item {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  font-weight: 800;
+  font-size: 0.875rem;
+}
+
+.apply-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.35rem;
+}
+
+.apply-doc-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+}
+
+.apply-submit-bar {
+  background-color: #ffffff;
+  border-radius: 16px;
+  border: 1px solid #cbd5e1;
+  padding: 1.75rem 2.25rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+.apply-submit-actions {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.apply-doc-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 2px solid #e2e8f0;
+  padding-bottom: 0.75rem;
+  margin-bottom: 1.75rem;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 768px) {
+  .apply-nav-header {
+    padding: 0.75rem 1rem !important;
+  }
+
+  .apply-nav-container {
+    flex-wrap: wrap !important;
+    gap: 0.65rem !important;
+  }
+
+  .apply-nav-actions {
+    width: 100% !important;
+    justify-content: space-between !important;
+    gap: 0.5rem !important;
+  }
+
+  .apply-nav-actions button {
+    flex: 1 !important;
+    padding: 0.5rem 0.65rem !important;
+    font-size: 0.78rem !important;
+    justify-content: center !important;
+  }
+
+  .apply-test-btn {
+    display: none !important;
+  }
+
+  .apply-page-wrapper {
+    margin: 1rem auto !important;
+    padding: 0 0.85rem !important;
+  }
+
+  .apply-section-card {
+    padding: 1.25rem 1rem !important;
+    border-radius: 12px !important;
+    margin-bottom: 1.25rem !important;
+  }
+
+  .apply-steps-grid {
+    display: flex !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    scrollbar-width: none !important;
+    gap: 0.65rem !important;
+    padding-top: 1rem !important;
+    padding-bottom: 0.35rem !important;
+    border-top: 1px solid #e2e8f0 !important;
+  }
+
+  .apply-steps-grid::-webkit-scrollbar {
+    display: none !important;
+  }
+
+  .apply-step-item {
+    flex-shrink: 0 !important;
+    font-size: 0.78rem !important;
+    gap: 0.45rem !important;
+    background-color: #f8fafc !important;
+    padding: 0.4rem 0.65rem !important;
+    border-radius: 8px !important;
+    border: 1px solid #e2e8f0 !important;
+  }
+
+  .apply-form-grid {
+    grid-template-columns: 1fr !important;
+    gap: 1rem !important;
+  }
+
+  .apply-doc-grid {
+    grid-template-columns: 1fr !important;
+    gap: 1rem !important;
+  }
+
+  .apply-doc-header-row {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 0.65rem !important;
+    margin-bottom: 1.25rem !important;
+  }
+
+  .apply-submit-bar {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    padding: 1.25rem 1rem !important;
+    gap: 1rem !important;
+  }
+
+  .apply-submit-actions {
+    flex-direction: column !important;
+    width: 100% !important;
+    gap: 0.65rem !important;
+  }
+
+  .apply-submit-actions button {
+    width: 100% !important;
+    justify-content: center !important;
+    padding: 0.85rem 1rem !important;
+  }
+
+  .apply-modal-content {
+    padding: 1.25rem 1rem !important;
+  }
+}
+
+
+
 
 

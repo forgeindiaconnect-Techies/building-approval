@@ -873,6 +873,12 @@ export const AppProvider = ({ children }) => {
     };
     setApplications([...applications, newApp]);
 
+    // Dispatch real-time Customer Registered notifications
+    addNotification('NEW_APPLICATION', newId, `Customer Registered: ${newApp.applicantName} registered new building approval application (${newId})`, 'Admin', newApp.applicantName);
+    if (worker && worker !== 'Admin') {
+      addNotification('NEW_APPLICATION', newId, `Customer Registered: ${newApp.applicantName} registered successfully (${newId})`, worker, newApp.applicantName);
+    }
+
     // Automatically trigger Brevo real-time email if customer email is provided
     if (appData.email && appData.email.includes('@')) {
       sendBrevoRegistrationEmail({
@@ -1047,12 +1053,13 @@ export const AppProvider = ({ children }) => {
     }));
   };
 
-  const addNotification = (type, targetId, message, role) => {
+  const addNotification = (type, targetId, message, role, applicantName = '') => {
     const uniqueId = `notif-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
     setNotifications(prev => [{
       id: uniqueId,
       type,
       targetId,
+      applicantName,
       message,
       timestamp: new Date().toISOString(),
       read: false,
@@ -1218,7 +1225,8 @@ export const AppProvider = ({ children }) => {
     };
 
     setApplications(prev => [newApp, ...prev]);
-    addNotification('NEW_APPLICATION', newId, `New Customer Application submitted: ${newApp.applicantName} (${newId})`, 'Admin');
+    addNotification('NEW_APPLICATION', newId, `Customer Registered: ${newApp.applicantName} registered new building approval application (${newId})`, 'Admin', newApp.applicantName);
+    addNotification('NEW_APPLICATION', newId, `Customer Registered: ${newApp.applicantName} (App ID: ${newId})`, 'worker', newApp.applicantName);
 
     if (customerData.email && customerData.email.includes('@')) {
       sendBrevoRegistrationEmail({

@@ -4,6 +4,8 @@ import { useApp } from '../context/AppContext';
 import { Upload, CheckCircle, AlertTriangle, Clock, Download, Phone, Send } from 'lucide-react';
 
 export default function CustomerUpload() {
+  const { id } = useParams();
+  const { applications = [], addDocument, sendBrevoCustomEmail } = useApp();
   const cleanId = (id || '').trim();
   const app = applications.find(a => 
     a && a.id && (a.id === cleanId || a.id.toLowerCase() === cleanId.toLowerCase())
@@ -108,6 +110,29 @@ export default function CustomerUpload() {
       return;
     }
     setSubmitted(true);
+
+    if (app && app.email && app.email.includes('@')) {
+      sendBrevoCustomEmail({
+        toEmail: app.email,
+        toName: app.applicantName,
+        subject: `📄 Documents Received: ${app.id} — DTCP Clearance Portal`,
+        message: `Dear ${app.applicantName},\n\nYour uploaded documents for application ${app.id} have been successfully received and submitted for technical scrutiny.\n\nTrack your live progress at: ${window.location.origin}/track`,
+        htmlContent: `
+          <div style="font-family: Arial, sans-serif; padding: 20px; background-color: #f8fafc; color: #1e293b;">
+            <div style="max-width: 580px; margin: 0 auto; background: #ffffff; border-radius: 12px; padding: 24px; border: 1px solid #e2e8f0;">
+              <h2 style="color: #0F2A4A; margin-top: 0;">📄 Documents Received Successfully</h2>
+              <p>Dear <strong>${app.applicantName}</strong>,</p>
+              <p>We have successfully received your uploaded documentation for Application ID: <strong style="color: #2563eb; font-family: monospace;">${app.id}</strong>.</p>
+              <p>Our town planning officers have begun technical scrutiny and verification of your uploaded files.</p>
+              <div style="text-align: center; margin: 25px 0;">
+                <a href="${window.location.origin}/track" style="background-color: #0F2A4A; color: #ffffff; padding: 12px 26px; border-radius: 8px; text-decoration: none; font-weight: bold; display: inline-block;">🔍 Track Application Status</a>
+              </div>
+              <p style="font-size: 12px; color: #64748b; margin-top: 20px;">Directorate of Town and Country Planning (DTCP) • Government of Tamil Nadu</p>
+            </div>
+          </div>
+        `
+      });
+    }
   };
 
   return (
@@ -115,10 +140,10 @@ export default function CustomerUpload() {
       {/* Top Header */}
       <header style={{ backgroundColor: 'white', borderBottom: '1px solid var(--border)', padding: '1rem 2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'sticky', top: 0, zIndex: 10 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-          <div style={{ fontSize: '1.75rem' }}>🏢</div>
+          <div style={{ fontSize: '1.75rem' }}>🏛️</div>
           <div>
-            <h1 style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--primary)', margin: 0 }}>ABC Constructions</h1>
-            <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', margin: 0 }}>Building Approval Portal</p>
+            <h1 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#0F2A4A', margin: 0 }}>Tamil Nadu Building Approval Portal</h1>
+            <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', margin: 0 }}>Single Window Clearance System • DTCP</p>
           </div>
         </div>
         <a href="tel:+919876543210" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-main)', textDecoration: 'none', fontSize: '0.875rem', fontWeight: 500 }}>

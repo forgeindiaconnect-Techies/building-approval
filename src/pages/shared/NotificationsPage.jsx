@@ -436,6 +436,20 @@ export default function NotificationsPage() {
                       {iconConf.label}
                     </span>
 
+                    {n.applicantName && (
+                      <span style={{ 
+                        fontSize: '0.68rem', 
+                        fontWeight: 700, 
+                        backgroundColor: '#eff6ff', 
+                        color: '#1d4ed8', 
+                        padding: '0.12rem 0.45rem', 
+                        borderRadius: '6px',
+                        border: '1px solid #bfdbfe'
+                      }}>
+                        👤 {n.applicantName}
+                      </span>
+                    )}
+
                     {!n.read && (
                       <span className="notif-new-badge">
                         NEW

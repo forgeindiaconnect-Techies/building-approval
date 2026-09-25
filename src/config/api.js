@@ -1,8 +1,11 @@
 // Centralized API configuration for Building Approval Portal
-// Uses environment variable VITE_BACKEND_URL in production (e.g. on Vercel), with fallback to localhost
+// Automatically uses live Render backend in production / on Vercel, and localhost in dev
+
+const DEFAULT_PROD_BACKEND = 'https://building-approval-dy6i.onrender.com';
+const DEFAULT_DEV_BACKEND = 'http://localhost:5000';
 
 export const API_BASE_URL = (
   import.meta.env.VITE_BACKEND_URL || 
   import.meta.env.VITE_API_URL || 
-  'http://localhost:5000'
-).replace(/\/+$/, ''); // Remove trailing slashes
+  (import.meta.env.PROD ? DEFAULT_PROD_BACKEND : DEFAULT_DEV_BACKEND)
+).replace(/\/+$/, '');
