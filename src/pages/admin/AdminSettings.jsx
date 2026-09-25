@@ -26,6 +26,7 @@ import {
   Sparkles
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
+import { API_BASE_URL } from '../../config/api';
 
 export default function AdminSettings() {
   const { pushLiveToast, themeSettings, updateThemeSettings, resetThemeSettings } = useApp();
@@ -104,7 +105,7 @@ export default function AdminSettings() {
     // Brevo check
     setServiceStatus(prev => ({ ...prev, brevo: { loading: true, message: 'Verifying Brevo...' } }));
     try {
-      const res = await fetch('http://localhost:5000/api/brevo/check');
+      const res = await fetch(`${API_BASE_URL}/api/brevo/check`);
       const data = await res.json();
       setServiceStatus(prev => ({
         ...prev,
@@ -124,7 +125,7 @@ export default function AdminSettings() {
     // Cloudinary check
     setServiceStatus(prev => ({ ...prev, cloudinary: { loading: true, message: 'Verifying Cloudinary...' } }));
     try {
-      const res = await fetch('http://localhost:5000/api/cloudinary/check');
+      const res = await fetch(`${API_BASE_URL}/api/cloudinary/check`);
       const data = await res.json();
       setServiceStatus(prev => ({
         ...prev,
@@ -154,7 +155,7 @@ export default function AdminSettings() {
     setIsSendingTest(true);
     setTestEmailResult(null);
     try {
-      const res = await fetch('http://localhost:5000/api/brevo/test-email', {
+      const res = await fetch(`${API_BASE_URL}/api/brevo/test-email`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -172,7 +173,7 @@ export default function AdminSettings() {
         setTestEmailResult({ success: false, message: data.error || 'Failed to send test email' });
       }
     } catch (err) {
-      setTestEmailResult({ success: false, message: 'Error: Could not reach backend at http://localhost:5000. ' + err.message });
+      setTestEmailResult({ success: false, message: `Error: Could not reach backend at ${API_BASE_URL}. ` + err.message });
     } finally {
       setIsSendingTest(false);
     }

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
+import { API_BASE_URL } from '../config/api';
 import { 
   Building2, 
   UploadCloud, 
@@ -272,7 +273,7 @@ export default function ApplyNowPage() {
                     return;
                   }
                   try {
-                    const res = await fetch('http://localhost:5000/api/brevo/test-email', {
+                    const res = await fetch(`${API_BASE_URL}/api/brevo/test-email`, {
                       method: 'POST',
                       headers: { 'Content-Type': 'application/json' },
                       body: JSON.stringify({
@@ -289,7 +290,7 @@ export default function ApplyNowPage() {
                       alert(`❌ Brevo delivery error:\n${data.error || JSON.stringify(data)}`);
                     }
                   } catch (err) {
-                    alert(`❌ Connection error: Could not reach backend at http://localhost:5000.\n${err.message}`);
+                    alert(`❌ Connection error: Could not reach backend at ${API_BASE_URL}.\n${err.message}`);
                   }
                 }}
                 style={{

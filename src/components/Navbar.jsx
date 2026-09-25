@@ -3,6 +3,7 @@ import { User, Bell, CheckCircle, Zap, RotateCcw, Menu, X } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { useNavigate } from 'react-router-dom';
 import LiveToastContainer from './LiveToastContainer';
+import { API_BASE_URL } from '../config/api';
 
 export default function Navbar() {
   const { 
@@ -219,7 +220,7 @@ export default function Navbar() {
                 return;
               }
               try {
-                const res = await fetch('http://localhost:5000/api/brevo/test-email', {
+                const res = await fetch(`${API_BASE_URL}/api/brevo/test-email`, {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json' },
                   body: JSON.stringify({
@@ -236,7 +237,7 @@ export default function Navbar() {
                   alert(`❌ Brevo delivery error:\n${data.error || JSON.stringify(data)}`);
                 }
               } catch (err) {
-                alert(`❌ Connection error: Could not reach backend at http://localhost:5000.\n${err.message}`);
+                alert(`❌ Connection error: Could not reach backend at ${API_BASE_URL}.\n${err.message}`);
               }
             }}
             style={{

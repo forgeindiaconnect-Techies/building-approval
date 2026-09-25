@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { API_BASE_URL } from '../config/api';
 
 const AppContext = createContext();
 
@@ -779,7 +780,7 @@ export const AppProvider = ({ children }) => {
         trackingUrl: `${window.location.origin}/track`
       };
 
-      const res = await fetch('http://localhost:5000/api/brevo/send-registration-email', {
+      const res = await fetch(`${API_BASE_URL}/api/brevo/send-registration-email`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -823,7 +824,7 @@ export const AppProvider = ({ children }) => {
 
   const sendBrevoCustomEmail = async ({ toEmail, toName, subject, message, htmlContent }) => {
     try {
-      const res = await fetch('http://localhost:5000/api/brevo/test-email', {
+      const res = await fetch(`${API_BASE_URL}/api/brevo/test-email`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ toEmail, toName, subject, message, htmlContent })
