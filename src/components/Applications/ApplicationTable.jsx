@@ -1,12 +1,14 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import ApplicationStatus from './ApplicationStatus';
-import { Eye, Send, CheckCircle, AlertCircle, Clock, Zap } from 'lucide-react';
+import { Eye, Send, Trash2, AlertTriangle, CheckCircle, AlertCircle, Clock, Zap, X } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 
 export default function ApplicationTable({ applications, onClearFilters }) {
   const navigate = useNavigate();
-  const { lastUpdatedAppId, lastLiveSync, isRealTimeEnabled } = useApp();
+  const { lastUpdatedAppId, lastLiveSync, isRealTimeEnabled, deleteApplication, currentUser } = useApp();
+  const [deleteTarget, setDeleteTarget] = useState(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const getStageAndStatus = (app) => {
     let stage = 'Documents';
@@ -197,6 +199,27 @@ export default function ApplicationTable({ applications, onClearFilters }) {
                         <Send size={13} />
                       </a>
                     )}
+
+                    <button
+                      className="btn"
+                      style={{ 
+                        padding: '0.3rem 0.55rem', 
+                        fontSize: '0.75rem', 
+                        fontWeight: 700, 
+                        display: 'inline-flex', 
+                        alignItems: 'center', 
+                        gap: '0.25rem',
+                        backgroundColor: '#FEF2F2',
+                        color: '#DC2626',
+                        border: '1px solid #FECACA',
+                        borderRadius: 'var(--radius-sm)',
+                        cursor: 'pointer'
+                      }}
+                      title={`Delete ${app.id}`}
+                      onClick={() => setDeleteTarget(app)}
+                    >
+                      <Trash2 size={13} />
+                    </button>
                   </div>
                 </td>
               </tr>
@@ -204,6 +227,122 @@ export default function ApplicationTable({ applications, onClearFilters }) {
           })}
         </tbody>
       </table>
+
+      {/* Delete Confirmation Modal */}
+      {deleteTarget && (
+        <div 
+          style={{
+            position: 'fixed',
+            inset: 0,
+            backgroundColor: 'rgba(15, 23, 42, 0.6)',
+            backdropFilter: 'blur(4px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 9999,
+            padding: '1rem'
+          }}
+          onClick={(e) => {
+            if (e.target === e.currentTarget && !isDeleting) setDeleteTarget(null);
+          }}
+        >
+          <div 
+            style={{
+              backgroundColor: '#FFFFFF',
+              borderRadius: '16px',
+              maxWidth: '460px',
+              width: '100%',
+              padding: '1.75rem',
+              boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+              border: '1px solid #F1F5F9',
+              animation: 'scaleIn 0.15s ease-out'
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '1rem' }}>
+              <div 
+                style={{
+                  width: '44px',
+                  height: '44px',
+                  borderRadius: '12px',
+                  backgroundColor: '#FEE2E2',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexShrink: 0
+                }}
+              >
+                <AlertTriangle size={24} color="#DC2626" />
+              </div>
+              <div style={{ flex: 1 }}>
+                <h3 style={{ margin: '0 0 0.4rem 0', fontSize: '1.1rem', fontWeight: 800, color: '#0F172A' }}>
+                  Delete Application?
+                </h3>
+                <p style={{ margin: 0, fontSize: '0.85rem', color: '#64748B', lineHeight: 1.5 }}>
+                  Are you sure you want to permanently delete application <strong style={{ color: '#0F172A' }}>{deleteTarget.id}</strong> submitted by <strong style={{ color: '#0F172A' }}>{deleteTarget.applicantName}</strong>?
+                </p>
+                <div 
+                  style={{
+                    marginTop: '0.75rem',
+                    padding: '0.65rem 0.85rem',
+                    backgroundColor: '#F8FAFC',
+                    borderRadius: '8px',
+                    border: '1px solid #E2E8F0',
+                    fontSize: '0.78rem',
+                    color: '#475569'
+                  }}
+                >
+                  📍 <strong>Location:</strong> {deleteTarget.location || 'N/A'}<br/>
+                  🏢 <strong>Type:</strong> {deleteTarget.buildingType || 'Residential'}
+                </div>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '1.5rem' }}>
+              <button
+                type="button"
+                className="btn btn-outline"
+                style={{ padding: '0.5rem 1rem', fontSize: '0.85rem', fontWeight: 600 }}
+                disabled={isDeleting}
+                onClick={() => setDeleteTarget(null)}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="btn"
+                style={{
+                  padding: '0.5rem 1.25rem',
+                  fontSize: '0.85rem',
+                  fontWeight: 700,
+                  backgroundColor: '#DC2626',
+                  color: '#FFFFFF',
+                  border: 'none',
+                  borderRadius: '8px',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.4rem',
+                  cursor: isDeleting ? 'not-allowed' : 'pointer'
+                }}
+                disabled={isDeleting}
+                onClick={async () => {
+                  setIsDeleting(true);
+                  try {
+                    await deleteApplication(deleteTarget.id);
+                    setDeleteTarget(null);
+                  } catch (err) {
+                    alert('Failed to delete: ' + err.message);
+                  } finally {
+                    setIsDeleting(false);
+                  }
+                }}
+              >
+                <Trash2 size={15} />
+                {isDeleting ? 'Deleting...' : 'Confirm Delete'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

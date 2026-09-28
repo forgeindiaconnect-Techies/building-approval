@@ -29,7 +29,8 @@ import {
   Share2,
   HardHat,
   BadgeCheck,
-  AlertTriangle
+  AlertTriangle,
+  Trash2
 } from 'lucide-react';
 import { 
   downloadSingleDocument, 
@@ -40,7 +41,7 @@ import {
 export default function ApplicationDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { applications = [], updateStage, updateAppStatus, currentUser, verifyDocument, themeSettings, pushLiveToast } = useApp();
+  const { applications = [], updateStage, updateAppStatus, currentUser, verifyDocument, themeSettings, pushLiveToast, deleteApplication } = useApp();
   
   const [activeTab, setActiveTab] = useState('documents');
   const [docRejectModal, setDocRejectModal] = useState(null);
@@ -50,6 +51,8 @@ export default function ApplicationDetails() {
   const [approveModal, setApproveModal] = useState(false);
   const [rejectModal, setRejectModal] = useState(false);
   const [finalRejectReason, setFinalRejectReason] = useState('');
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const app = applications.find(a => a && a.id === id);
 
@@ -176,6 +179,27 @@ export default function ApplicationDetails() {
           >
             <Printer size={15} /> Print / Export PDF
           </button>
+
+          {currentUser === 'Admin' && (
+            <button
+              onClick={() => setShowDeleteModal(true)}
+              className="btn btn-sm"
+              style={{
+                fontSize: '0.8rem',
+                fontWeight: 700,
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.35rem',
+                backgroundColor: '#FEF2F2',
+                color: '#DC2626',
+                border: '1px solid #FECACA',
+                cursor: 'pointer'
+              }}
+              title="Permanently delete this application"
+            >
+              <Trash2 size={14} /> Delete
+            </button>
+          )}
         </div>
       </div>
 
@@ -824,6 +848,73 @@ export default function ApplicationDetails() {
               <button onClick={() => setRejectModal(false)} className="btn btn-outline btn-sm">Cancel</button>
               <button onClick={handleFinalReject} className="btn btn-sm" style={{ backgroundColor: '#dc2626', color: 'white', fontWeight: 800, border: 'none' }}>
                 Confirm Rejection
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Application Modal */}
+      {showDeleteModal && (
+        <div 
+          style={{ 
+            position: 'fixed', 
+            top: 0, 
+            left: 0, 
+            right: 0, 
+            bottom: 0, 
+            backgroundColor: 'rgba(15, 23, 42, 0.65)', 
+            backdropFilter: 'blur(4px)', 
+            zIndex: 9999, 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'center', 
+            padding: '1rem' 
+          }}
+          onClick={(e) => {
+            if (e.target === e.currentTarget && !isDeleting) setShowDeleteModal(false);
+          }}
+        >
+          <div style={{ backgroundColor: '#ffffff', borderRadius: '16px', maxWidth: '440px', width: '100%', padding: '2rem', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)', border: '1px solid #cbd5e1' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem' }}>
+              <div style={{ width: '40px', height: '40px', borderRadius: '10px', backgroundColor: '#FEE2E2', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <AlertTriangle size={22} color="#DC2626" />
+              </div>
+              <div>
+                <h3 style={{ fontSize: '1.2rem', fontWeight: 800, margin: 0, color: '#0F172A' }}>Delete Application?</h3>
+                <span style={{ fontSize: '0.78rem', color: '#64748B' }}>Permanent action</span>
+              </div>
+            </div>
+            <p style={{ fontSize: '0.88rem', color: '#475569', margin: '0 0 1.5rem 0', lineHeight: 1.5 }}>
+              Are you sure you want to permanently delete application <strong>{app.id}</strong> ({app.applicantName})? This record will be erased from the database and cannot be recovered.
+            </p>
+            <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end' }}>
+              <button 
+                type="button"
+                disabled={isDeleting}
+                onClick={() => setShowDeleteModal(false)} 
+                className="btn btn-outline btn-sm"
+              >
+                Cancel
+              </button>
+              <button 
+                type="button"
+                disabled={isDeleting}
+                onClick={async () => {
+                  setIsDeleting(true);
+                  try {
+                    await deleteApplication(app.id);
+                    navigate(currentUser === 'Admin' ? '/admin/applications' : '/worker/applications');
+                  } catch (err) {
+                    alert('Failed to delete application: ' + err.message);
+                    setIsDeleting(false);
+                  }
+                }} 
+                className="btn btn-sm" 
+                style={{ backgroundColor: '#DC2626', color: 'white', fontWeight: 800, border: 'none', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}
+              >
+                <Trash2 size={14} />
+                {isDeleting ? 'Deleting...' : 'Delete Application'}
               </button>
             </div>
           </div>

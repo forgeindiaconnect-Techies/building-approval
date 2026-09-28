@@ -840,6 +840,9 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
+  const parsedUrl = new URL(req.url, `http://${req.headers.host || 'localhost:' + PORT}`);
+  const pathname = parsedUrl.pathname;
+
   // 0. Static Generated Project Assets Endpoint
   if (req.method === 'GET' && pathname.startsWith('/api/static-asset/')) {
     const assetKey = pathname.replace('/api/static-asset/', '').trim();
@@ -1043,6 +1046,33 @@ const server = http.createServer(async (req, res) => {
       const app = db.applications.find(a => a.id.toUpperCase() === id.toUpperCase());
       if (app) return sendJson(res, 200, app);
       return sendJson(res, 404, { error: 'Application not found' });
+    }
+  }
+
+  // 8b. DELETE single application by ID
+  if (req.method === 'DELETE' && pathname.startsWith('/api/applications/')) {
+    const id = decodeURIComponent(pathname.replace('/api/applications/', '')).trim();
+    if (isMongoConnected && ApplicationModel) {
+      try {
+        const deleted = await ApplicationModel.findOneAndDelete({ id: new RegExp(`^${id}$`, 'i') });
+        if (deleted) {
+          console.log(`🗑️ [MongoDB] Successfully deleted application: ${id}`);
+          return sendJson(res, 200, { success: true, message: `Application ${id} deleted successfully`, id });
+        }
+        return sendJson(res, 404, { error: `Application ${id} not found in MongoDB` });
+      } catch (err) {
+        return sendJson(res, 500, { error: err.message });
+      }
+    } else {
+      const db = getLocalDb();
+      const initialLength = db.applications.length;
+      db.applications = db.applications.filter(a => a.id.toUpperCase() !== id.toUpperCase());
+      if (db.applications.length < initialLength) {
+        saveLocalDb(db);
+        console.log(`🗑️ [LocalDB] Successfully deleted application: ${id}`);
+        return sendJson(res, 200, { success: true, message: `Application ${id} deleted successfully`, id });
+      }
+      return sendJson(res, 404, { error: `Application ${id} not found in local store` });
     }
   }
 

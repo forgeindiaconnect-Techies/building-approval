@@ -6,6 +6,34 @@ import ApplicationFilters from '../../components/Applications/ApplicationFilters
 import ApplicationTable from '../../components/Applications/ApplicationTable';
 import ApplicationPagination from '../../components/Applications/ApplicationPagination';
 
+const TN_DISTRICTS = [
+  'Chennai', 'Chengalpattu', 'Coimbatore', 'Cuddalore', 'Dharmapuri', 
+  'Dindigul', 'Erode', 'Kallakurichi', 'Kancheepuram', 'Kanyakumari', 
+  'Karur', 'Krishnagiri', 'Madurai', 'Mayiladuthurai', 'Nagapattinam', 
+  'Namakkal', 'Nilgiris', 'Perambalur', 'Pudukkottai', 'Ramanathapuram', 
+  'Ranipet', 'Salem', 'Sivaganga', 'Tenkasi', 'Thanjavur', 'Theni', 
+  'Thoothukudi', 'Tiruchirappalli', 'Tirunelveli', 'Tirupathur', 'Tiruppur', 
+  'Tiruvallur', 'Tiruvannamalai', 'Tiruvarur', 'Vellore', 'Viluppuram', 'Virudhunagar'
+];
+
+const initialAdminFormData = {
+  applicantName: '',
+  mobile: '',
+  email: '',
+  aadhaarNumber: '',
+  district: 'Chennai',
+  taluk: '',
+  village: '',
+  address: '',
+  location: '',
+  buildingType: 'Residential',
+  surveyNumber: '',
+  plotArea: '1200',
+  area: '2100',
+  numberOfFloors: 'G+2 Floors',
+  buildingPurpose: 'Residential Housing'
+};
+
 export default function Applications() {
   const { applications = [], addApplication, currentUser, workers = [] } = useApp();
   const [searchParams] = useSearchParams();
@@ -23,15 +51,7 @@ export default function Applications() {
   }, [urlSearch]);
 
   // Modal Form State
-  const [formData, setFormData] = useState({
-    applicantName: '',
-    mobile: '',
-    email: '',
-    location: '',
-    surveyNumber: '',
-    buildingType: 'Residential',
-    area: ''
-  });
+  const [formData, setFormData] = useState(initialAdminFormData);
   const [createdAppId, setCreatedAppId] = useState(null);
 
   const visibleApps = currentUser === 'Admin' 
@@ -76,7 +96,23 @@ export default function Applications() {
 
   const handleCreate = (e) => {
     e.preventDefault();
-    const newId = addApplication(formData);
+    const loc = formData.location || `${formData.village ? formData.village + ', ' : ''}${formData.district || 'Chennai'}`;
+    const newId = addApplication({
+      ...formData,
+      fullName: formData.applicantName,
+      location: loc,
+      proposedBuildingArea: formData.area || '2100',
+      purposeOfBuilding: formData.buildingPurpose || 'Residential Housing',
+      buildingDetails: {
+        plotArea: `${formData.plotArea || '1200'} sq.ft`,
+        builtUpArea: `${formData.area || '2100'} sq.ft`,
+        noOfFloors: formData.numberOfFloors || 'G+2 Floors',
+        buildingPurpose: formData.buildingPurpose || 'Residential Housing'
+      },
+      workerId: currentUser === 'Admin' ? 'Admin' : currentUser,
+      workerName: currentUser === 'Admin' ? 'Direct Customer (Admin)' : currentUser,
+      assignedWorker: currentUser === 'Admin' ? 'Direct Customer (Admin)' : currentUser
+    });
     setCreatedAppId(newId);
   };
 
@@ -126,7 +162,7 @@ export default function Applications() {
             <button 
               className="btn btn-primary btn-sm admin-header-btn" 
               style={{ padding: '0.45rem 0.95rem', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}
-              onClick={() => { setShowModal(true); setCreatedAppId(null); setFormData({ applicantName: '', mobile: '', email: '', location: '', surveyNumber: '', buildingType: 'Residential', area: '' }); }}
+              onClick={() => { setShowModal(true); setCreatedAppId(null); setFormData(initialAdminFormData); }}
             >
               <Plus size={15} /> New Application
             </button>
@@ -215,57 +251,259 @@ export default function Applications() {
 
       {/* New Application Modal */}
       {showModal && (
-        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 999, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <div className="card" style={{ width: '480px', backgroundColor: 'white', maxHeight: '90vh', overflowY: 'auto', borderRadius: 'var(--radius-lg)' }}>
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(15, 23, 42, 0.65)', backdropFilter: 'blur(3px)', zIndex: 999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}>
+          <div style={{ width: '100%', maxWidth: '640px', backgroundColor: '#ffffff', maxHeight: '92vh', overflow: 'hidden', borderRadius: '16px', display: 'flex', flexDirection: 'column', boxShadow: '0 20px 40px rgba(0,0,0,0.2)' }}>
             {!createdAppId ? (
               <>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', borderBottom: '1px solid var(--border)', paddingBottom: '0.75rem' }}>
-                  <h3 style={{ fontSize: '1.15rem', fontWeight: 700, margin: 0, color: 'var(--primary)' }}>Create New Application</h3>
-                  <button onClick={() => setShowModal(false)} style={{ background: 'none', border: 'none', fontSize: '1.25rem', cursor: 'pointer', color: 'var(--text-muted)' }}>&times;</button>
+                <div style={{ backgroundColor: 'var(--primary, #0F2A4A)', color: '#ffffff', padding: '1.1rem 1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexShrink: 0 }}>
+                  <div>
+                    <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 800, color: '#ffffff', letterSpacing: '-0.01em' }}>
+                      Register New Application
+                    </h3>
+                    <p style={{ margin: '0.2rem 0 0 0', fontSize: '0.785rem', color: 'rgba(255,255,255,0.85)' }}>
+                      Enter complete applicant & building details to generate official application & upload link.
+                    </p>
+                  </div>
+                  <button onClick={() => setShowModal(false)} style={{ background: 'none', border: 'none', fontSize: '1.5rem', cursor: 'pointer', color: '#ffffff', lineHeight: 1 }}>&times;</button>
                 </div>
-                <form onSubmit={handleCreate}>
-                  <div className="form-group">
-                    <label className="form-label">Customer Name</label>
-                    <input type="text" className="form-control" required value={formData.applicantName} onChange={e => setFormData({...formData, applicantName: e.target.value})} placeholder="e.g. Raj Kumar" />
-                  </div>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
-                    <div className="form-group">
-                      <label className="form-label">Mobile Number</label>
-                      <input type="tel" className="form-control" required value={formData.mobile} onChange={e => setFormData({...formData, mobile: e.target.value})} placeholder="e.g. 9876543210" />
+
+                <form onSubmit={handleCreate} style={{ padding: '1.25rem 1.5rem', overflowY: 'auto', flex: 1, display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+                  
+                  {/* Section 1: Applicant Details */}
+                  <div style={{ backgroundColor: '#f8fafc', padding: '1rem 1.15rem', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.85rem', borderBottom: '1px solid #e2e8f0', paddingBottom: '0.5rem' }}>
+                      <span style={{ backgroundColor: 'var(--primary, #0F2A4A)', color: '#ffffff', width: '22px', height: '22px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', fontWeight: 800 }}>1</span>
+                      <h4 style={{ margin: 0, fontSize: '0.925rem', fontWeight: 800, color: '#0f172a' }}>
+                        Applicant Details
+                      </h4>
                     </div>
-                    <div className="form-group">
-                      <label className="form-label" style={{ display: 'flex', justifyContent: 'space-between' }}>
-                        <span>Customer Email</span>
-                        <span style={{ fontSize: '0.7rem', color: '#2563eb', fontWeight: 600 }}>📧 Brevo</span>
-                      </label>
-                      <input type="email" className="form-control" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} placeholder="e.g. raj@gmail.com" />
+
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '0.75rem' }}>
+                      <div style={{ gridColumn: '1 / -1' }}>
+                        <label style={{ display: 'block', fontSize: '0.785rem', fontWeight: 700, color: '#334155', marginBottom: '0.25rem' }}>
+                          Full Name *
+                        </label>
+                        <input 
+                          type="text" 
+                          placeholder="Enter applicant full name" 
+                          required 
+                          value={formData.applicantName} 
+                          onChange={e => setFormData({...formData, applicantName: e.target.value})}
+                          style={{ width: '100%', boxSizing: 'border-box', padding: '0.55rem 0.75rem', border: '1px solid #cbd5e1', borderRadius: '7px', fontSize: '0.825rem' }}
+                        />
+                      </div>
+
+                      <div>
+                        <label style={{ display: 'block', fontSize: '0.785rem', fontWeight: 700, color: '#334155', marginBottom: '0.25rem' }}>
+                          Mobile Number *
+                        </label>
+                        <input 
+                          type="tel" 
+                          placeholder="10-digit mobile number" 
+                          required 
+                          pattern="[0-9]{10}"
+                          title="Please enter a valid 10-digit mobile number"
+                          value={formData.mobile} 
+                          onChange={e => setFormData({...formData, mobile: e.target.value})}
+                          style={{ width: '100%', boxSizing: 'border-box', padding: '0.55rem 0.75rem', border: '1px solid #cbd5e1', borderRadius: '7px', fontSize: '0.825rem' }}
+                        />
+                      </div>
+
+                      <div>
+                        <label style={{ display: 'block', fontSize: '0.785rem', fontWeight: 700, color: '#334155', marginBottom: '0.25rem' }}>
+                          Email Address (Optional)
+                        </label>
+                        <input 
+                          type="email" 
+                          placeholder="e.g. applicant@gmail.com" 
+                          value={formData.email} 
+                          onChange={e => setFormData({...formData, email: e.target.value})}
+                          style={{ width: '100%', boxSizing: 'border-box', padding: '0.55rem 0.75rem', border: '1px solid #cbd5e1', borderRadius: '7px', fontSize: '0.825rem' }}
+                        />
+                      </div>
+
+                      <div>
+                        <label style={{ display: 'block', fontSize: '0.785rem', fontWeight: 700, color: '#334155', marginBottom: '0.25rem' }}>
+                          ID Number * (Aadhaar / Voter ID / Passport)
+                        </label>
+                        <input 
+                          type="text" 
+                          placeholder="e.g. 1234 5678 9012" 
+                          required 
+                          value={formData.aadhaarNumber} 
+                          onChange={e => setFormData({...formData, aadhaarNumber: e.target.value})}
+                          style={{ width: '100%', boxSizing: 'border-box', padding: '0.55rem 0.75rem', border: '1px solid #cbd5e1', borderRadius: '7px', fontSize: '0.825rem' }}
+                        />
+                      </div>
+
+                      <div>
+                        <label style={{ display: 'block', fontSize: '0.785rem', fontWeight: 700, color: '#334155', marginBottom: '0.25rem' }}>
+                          District *
+                        </label>
+                        <select 
+                          value={formData.district} 
+                          onChange={e => setFormData({...formData, district: e.target.value})}
+                          style={{ width: '100%', boxSizing: 'border-box', padding: '0.55rem 0.75rem', border: '1px solid #cbd5e1', borderRadius: '7px', fontSize: '0.825rem', backgroundColor: '#ffffff' }}
+                        >
+                          {TN_DISTRICTS.map(d => (
+                            <option key={d} value={d}>{d}</option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <div>
+                        <label style={{ display: 'block', fontSize: '0.785rem', fontWeight: 700, color: '#334155', marginBottom: '0.25rem' }}>
+                          Taluk *
+                        </label>
+                        <input 
+                          type="text" 
+                          placeholder="Taluk name (e.g. Tambaram)" 
+                          required 
+                          value={formData.taluk} 
+                          onChange={e => setFormData({...formData, taluk: e.target.value})}
+                          style={{ width: '100%', boxSizing: 'border-box', padding: '0.55rem 0.75rem', border: '1px solid #cbd5e1', borderRadius: '7px', fontSize: '0.825rem' }}
+                        />
+                      </div>
+
+                      <div>
+                        <label style={{ display: 'block', fontSize: '0.785rem', fontWeight: 700, color: '#334155', marginBottom: '0.25rem' }}>
+                          Village *
+                        </label>
+                        <input 
+                          type="text" 
+                          placeholder="Village / Ward name" 
+                          required 
+                          value={formData.village} 
+                          onChange={e => setFormData({...formData, village: e.target.value})}
+                          style={{ width: '100%', boxSizing: 'border-box', padding: '0.55rem 0.75rem', border: '1px solid #cbd5e1', borderRadius: '7px', fontSize: '0.825rem' }}
+                        />
+                      </div>
+
+                      <div style={{ gridColumn: '1 / -1' }}>
+                        <label style={{ display: 'block', fontSize: '0.785rem', fontWeight: 700, color: '#334155', marginBottom: '0.25rem' }}>
+                          Address *
+                        </label>
+                        <textarea 
+                          rows={2}
+                          placeholder="Enter complete door no, street name & location address" 
+                          required 
+                          value={formData.address} 
+                          onChange={e => setFormData({...formData, address: e.target.value})}
+                          style={{ width: '100%', boxSizing: 'border-box', padding: '0.55rem 0.75rem', border: '1px solid #cbd5e1', borderRadius: '7px', fontSize: '0.825rem', resize: 'vertical' }}
+                        />
+                      </div>
                     </div>
                   </div>
-                  <div className="form-group">
-                    <label className="form-label">Location / Village</label>
-                    <input type="text" className="form-control" required value={formData.location} onChange={e => setFormData({...formData, location: e.target.value})} placeholder="e.g. Chennai South" />
-                  </div>
-                  <div className="form-group">
-                    <label className="form-label">Survey Number</label>
-                    <input type="text" className="form-control" required value={formData.surveyNumber} onChange={e => setFormData({...formData, surveyNumber: e.target.value})} placeholder="e.g. 14/2" />
-                  </div>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
-                    <div className="form-group">
-                      <label className="form-label">Building Type</label>
-                      <select className="form-control" value={formData.buildingType} onChange={e => setFormData({...formData, buildingType: e.target.value})}>
-                        <option>Residential</option>
-                        <option>Commercial</option>
-                        <option>Industrial</option>
-                      </select>
+
+                  {/* Section 2: Building Details */}
+                  <div style={{ backgroundColor: '#f8fafc', padding: '1rem 1.15rem', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.85rem', borderBottom: '1px solid #e2e8f0', paddingBottom: '0.5rem' }}>
+                      <span style={{ backgroundColor: '#0284c7', color: '#ffffff', width: '22px', height: '22px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', fontWeight: 800 }}>2</span>
+                      <h4 style={{ margin: 0, fontSize: '0.925rem', fontWeight: 800, color: '#0f172a' }}>
+                        Building Details
+                      </h4>
                     </div>
-                    <div className="form-group">
-                      <label className="form-label">Building Area</label>
-                      <input type="text" className="form-control" placeholder="1500 sq.ft" required value={formData.area} onChange={e => setFormData({...formData, area: e.target.value})} />
+
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+                      <div>
+                        <label style={{ display: 'block', fontSize: '0.785rem', fontWeight: 700, color: '#334155', marginBottom: '0.25rem' }}>
+                          Building Type *
+                        </label>
+                        <select 
+                          value={formData.buildingType} 
+                          onChange={e => setFormData({...formData, buildingType: e.target.value})}
+                          style={{ width: '100%', boxSizing: 'border-box', padding: '0.55rem 0.75rem', border: '1px solid #cbd5e1', borderRadius: '7px', fontSize: '0.825rem', backgroundColor: '#ffffff' }}
+                        >
+                          <option value="Residential">Residential</option>
+                          <option value="Commercial">Commercial</option>
+                          <option value="Industrial">Industrial</option>
+                          <option value="Institutional">Institutional</option>
+                          <option value="Mixed Use">Mixed Use</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label style={{ display: 'block', fontSize: '0.785rem', fontWeight: 700, color: '#334155', marginBottom: '0.25rem' }}>
+                          Survey Number *
+                        </label>
+                        <input 
+                          type="text" 
+                          placeholder="Survey Number / Plot No" 
+                          required 
+                          value={formData.surveyNumber} 
+                          onChange={e => setFormData({...formData, surveyNumber: e.target.value})}
+                          style={{ width: '100%', boxSizing: 'border-box', padding: '0.55rem 0.75rem', border: '1px solid #cbd5e1', borderRadius: '7px', fontSize: '0.825rem' }}
+                        />
+                      </div>
+
+                      <div>
+                        <label style={{ display: 'block', fontSize: '0.785rem', fontWeight: 700, color: '#334155', marginBottom: '0.25rem' }}>
+                          Plot Area (sq.ft)
+                        </label>
+                        <input 
+                          type="text" 
+                          placeholder="1200" 
+                          value={formData.plotArea} 
+                          onChange={e => setFormData({...formData, plotArea: e.target.value})}
+                          style={{ width: '100%', boxSizing: 'border-box', padding: '0.55rem 0.75rem', border: '1px solid #cbd5e1', borderRadius: '7px', fontSize: '0.825rem' }}
+                        />
+                      </div>
+
+                      <div>
+                        <label style={{ display: 'block', fontSize: '0.785rem', fontWeight: 700, color: '#334155', marginBottom: '0.25rem' }}>
+                          Proposed Building Area (sq.ft) *
+                        </label>
+                        <input 
+                          type="text" 
+                          placeholder="2100" 
+                          required
+                          value={formData.area} 
+                          onChange={e => setFormData({...formData, area: e.target.value})}
+                          style={{ width: '100%', boxSizing: 'border-box', padding: '0.55rem 0.75rem', border: '1px solid #cbd5e1', borderRadius: '7px', fontSize: '0.825rem' }}
+                        />
+                      </div>
+
+                      <div>
+                        <label style={{ display: 'block', fontSize: '0.785rem', fontWeight: 700, color: '#334155', marginBottom: '0.25rem' }}>
+                          Number of Floors
+                        </label>
+                        <select 
+                          value={formData.numberOfFloors} 
+                          onChange={e => setFormData({...formData, numberOfFloors: e.target.value})}
+                          style={{ width: '100%', boxSizing: 'border-box', padding: '0.55rem 0.75rem', border: '1px solid #cbd5e1', borderRadius: '7px', fontSize: '0.825rem', backgroundColor: '#ffffff' }}
+                        >
+                          <option value="Ground Floor (G)">Ground Floor (G)</option>
+                          <option value="G+1 Floors">G+1 Floors</option>
+                          <option value="G+2 Floors">G+2 Floors</option>
+                          <option value="G+3 Floors">G+3 Floors</option>
+                          <option value="G+4 Floors">G+4 Floors</option>
+                          <option value="Stilt+3 Floors">Stilt+3 Floors</option>
+                          <option value="Stilt+4 Floors">Stilt+4 Floors</option>
+                          <option value="High-Rise (5+ Floors)">High-Rise (5+ Floors)</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label style={{ display: 'block', fontSize: '0.785rem', fontWeight: 700, color: '#334155', marginBottom: '0.25rem' }}>
+                          Building Purpose
+                        </label>
+                        <input 
+                          type="text" 
+                          placeholder="Residential Housing" 
+                          value={formData.buildingPurpose} 
+                          onChange={e => setFormData({...formData, buildingPurpose: e.target.value})}
+                          style={{ width: '100%', boxSizing: 'border-box', padding: '0.55rem 0.75rem', border: '1px solid #cbd5e1', borderRadius: '7px', fontSize: '0.825rem' }}
+                        />
+                      </div>
                     </div>
                   </div>
-                  <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1.25rem' }}>
-                    <button type="button" className="btn btn-outline" style={{ flex: 1 }} onClick={() => setShowModal(false)}>Cancel</button>
-                    <button type="submit" className="btn btn-primary" style={{ flex: 1 }}>Create Application</button>
+
+                  {/* Actions Footer */}
+                  <div style={{ display: 'flex', gap: '0.75rem', paddingTop: '0.5rem', borderTop: '1px solid #e2e8f0', flexShrink: 0 }}>
+                    <button type="button" className="btn btn-outline" style={{ flex: 1, padding: '0.7rem' }} onClick={() => setShowModal(false)}>Cancel</button>
+                    <button type="submit" className="btn btn-primary" style={{ flex: 2, padding: '0.7rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem' }}>
+                      <Plus size={16} /> Create Application
+                    </button>
                   </div>
                 </form>
               </>

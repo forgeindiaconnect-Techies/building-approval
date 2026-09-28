@@ -919,6 +919,31 @@ export const AppProvider = ({ children }) => {
     }));
   };
 
+  const deleteApplication = async (appId) => {
+    if (!appId) return { success: false, error: 'No Application ID provided' };
+
+    // 1. Remove from React state (which triggers IndexedDB & localStorage persistence automatically)
+    setApplications(prev => prev.filter(app => app.id !== appId));
+
+    // 2. Remove any notifications referencing this application
+    setNotifications(prev => prev.filter(n => n.targetId !== appId));
+
+    // 3. Trigger UI notifications & toasts
+    pushLiveToast('Application Deleted', `Application ${appId} was permanently removed`, 'danger');
+    addNotification('APPLICATION_DELETED', appId, `Application ${appId} was deleted by ${currentUser}.`, 'Admin');
+
+    // 4. Send DELETE request to Backend Server (MongoDB Atlas / Local DB)
+    try {
+      await fetch(`${API_BASE_URL}/api/applications/${encodeURIComponent(appId)}`, {
+        method: 'DELETE'
+      });
+    } catch (err) {
+      console.warn('Backend server deletion sync error:', err.message);
+    }
+
+    return { success: true };
+  };
+
   // Section 40.8 Security Rule 🔐 — Public Customer Status Filter (Excludes workerId, internal notes & user IDs)
   const getPublicCustomerStatus = (appId) => {
     const cleanId = (appId || '').trim().toUpperCase();
@@ -1294,6 +1319,7 @@ export const AppProvider = ({ children }) => {
       logout,
       addApplication, 
       addCustomerApplication,
+      deleteApplication,
       sendBrevoRegistrationEmail,
       sendBrevoCustomEmail,
       reuploadCustomerDocument,
